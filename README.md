@@ -61,7 +61,6 @@ We plan to incorporate:
 
 - **Docker**: Containerized application
 - **Hugging Face Spaces**: Demo deployment
-- **Gradio**: Web interface
 
 ## Project Structure
 
@@ -157,26 +156,26 @@ See `data/README.md` for download instructions.
 
 ## Implementation Plan
 
-### Phase 1: Computer Vision (Weeks 1-4)
+### Phase 1: Computer Vision 
 
 - Train YOLOv8 on ingredient detection
 - Achieve reasonable accuracy on test set
 - Integrate with preprocessing pipeline
 
-### Phase 2: Recipe Retrieval (Weeks 5-8)
+### Phase 2: Recipe Retrieval 
 
 - Implement TF-IDF baseline
 - Build embedding-based search
 - Compare retrieval methods
 - Add Bloom filter for quick checks
 
-### Phase 3: Integration & UI (Weeks 9-10)
+### Phase 3: Integration & UI
 
 - Connect detection and retrieval
 - Build Gradio interface
 - End-to-end testing
 
-### Phase 4: Deployment (Weeks 11-12)
+### Phase 4: Deployment
 
 - Docker containerization
 - Deploy to Hugging Face Spaces
@@ -244,5 +243,3 @@ This project demonstrates practical ML deployment including:
 - Team collaboration with Git
 
 ---
-
-**Note**: This is a student project for our ML course. We focus on learning and implementing core concepts rather than production-scale deployment.
