@@ -1,331 +1,248 @@
 # SmartPantry: Recipes from Your Fridge Cam
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Our team is building an intelligent meal planning application. We use computer vision to identify ingredients from fridge photos. The system then suggests personalized recipes based on available ingredients.
+**Course Project**: Machine Learning Application Deployment
 
 ## Team Members
 
-- **Stacy Che**
-- **Kexin Lyu**
-- **Samantha Wang**
-- **Zexi Wu (Allen)**
-- **Tongrui Zhang (Neil)**
+- Stacy Che
+- Kexin Lyu
+- Samantha Wang
+- Zexi Wu (Allen)
+- Tongrui Zhang (Neil)
 
-## Table of Contents
+## Project Overview
 
-- [Problem Statement](#problem-statement)
-- [Solution Overview](#solution-overview)
-- [Technical Architecture](#technical-architecture)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Development Roadmap](#development-roadmap)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
+We are building a system that detects ingredients from fridge photos and recommends recipes. This project combines computer vision, information retrieval, and deployment techniques learned in class.
 
-## Problem Statement
+### The Problem
 
-Modern food consumption has changed significantly. Fast food costs more and provides less nutrition than cooking with basic ingredients. Many people want to cook at home but face challenges:
+Many people struggle with meal planning and food waste. Our solution helps by:
+- Detecting what ingredients you have from a photo
+- Finding recipes that match your available ingredients
+- Reducing decision fatigue and food waste
 
-- **Meal Planning**: Deciding what to cook takes time and mental energy
-- **Ingredient Tracking**: Keeping track of available items is difficult
-- **Food Waste**: Ingredients spoil before use
-- **Recipe Matching**: Finding recipes for available ingredients is tedious
+## Technical Approach
 
-We identified these problems as opportunities for our project.
+### 1. Image Recognition (Computer Vision)
 
-## Solution Overview
+**Fridge Ingredient Detection**
+- CNN-based models for image classification
+- YOLOv8 for object detection
+- Dataset: 30 ingredient classes from Roboflow
+- Training on 2,895 images
 
-Our team developed SmartPantry to address these challenges. We combine machine learning and computer vision into a practical cooking assistant.
+### 2. Recipe Matching (Information Retrieval)
 
-The workflow is straightforward:
+We will implement and compare multiple approaches:
 
-1. **Capture**: User takes a photo of their fridge or pantry
-2. **Detect**: Our AI identifies visible ingredients automatically
-3. **Suggest**: System recommends recipes based on detected items
-4. **Cook**: User follows recipes tailored to available ingredients
+**Method A: TF-IDF with Cosine Similarity**
+- Classic information retrieval baseline
+- Fast and interpretable
+- Good for ingredient matching
 
-Our solution helps reduce food waste and simplifies meal planning. We aim to encourage healthier home-cooked meals.
+**Method B: Embedding-based Search**
+- Sentence-BERT for semantic embeddings
+- FAISS for approximate nearest neighbor search
+- Better at understanding recipe context
 
-## Technical Architecture
+**Method C: Hybrid Approach**
+- Combine TF-IDF and embeddings
+- Weight by ingredient overlap ratio
+- Rank by multiple signals
 
-### Computer Vision Pipeline
+### 3. Data Structures (Course Concepts)
 
-- **Image Recognition**: Convolutional Neural Networks (CNNs) and transformer-based architectures for ingredient identification
-- **Object Detection**: YOLO (You Only Look Once) for handling cluttered, real-world fridge images with multiple overlapping items
-- **Multi-object Recognition**: Simultaneous detection of multiple ingredients in a single photo
+We plan to incorporate:
+- **Bloom Filters**: Quick ingredient availability checks
+- **Hash Tables**: Fast recipe lookups
+- **Min Heap**: Top-K recipe ranking
 
-### Recipe Matching System
+### 4. Deployment
 
-- **Natural Language Processing**: Advanced NLP techniques for recipe analysis and matching
-- **Embedding-based Search**: Semantic similarity search to find relevant recipes based on detected ingredients
-- **Recipe Database**: Curated collection of recipes with ingredient mappings and nutritional information
-
-### Application & Deployment
-
-- **GUI Application**: User-friendly interface for photo capture, ingredient review, and recipe browsing
-- **Containerization**: Docker containers for consistent deployment and scalability
-- **Cloud Deployment**: AWS infrastructure for accessibility and performance
-- **API Architecture**: RESTful APIs connecting frontend, ML models, and recipe database
-
-## Features
-
-### Current and Planned Features
-
-Our implementation includes:
-
-- **Ingredient Detection**
-  - Real-time image analysis
-  - Support for common pantry and fridge items
-  - Confidence scoring for detected ingredients
-
-- **Recipe Recommendations**
-  - Match recipes to available ingredients
-  - Filter by dietary preferences and restrictions
-  - Sort by match percentage and cooking time
-
-- **User Interface**
-  - Simple photo upload and capture
-  - Visual ingredient confirmation
-  - Interactive recipe browsing
-  - Shopping list generation for missing ingredients
-
-- **Future Enhancements**
-  - Expiration date tracking
-  - Nutritional information display
-  - Cooking difficulty ratings
-  - User preference learning
-
-## Technology Stack
-
-### Machine Learning & AI
-- **Computer Vision**: PyTorch/TensorFlow, OpenCV
-- **Object Detection**: YOLO (Ultralytics YOLOv8/v5)
-- **NLP**: Transformers, sentence-transformers, spaCy
-- **Embeddings**: Vector databases (FAISS, Pinecone, or ChromaDB)
-
-### Backend
-- **Framework**: Python (Flask/FastAPI)
-- **Database**: PostgreSQL or MongoDB
-- **API**: RESTful architecture
-
-### Frontend
-- **Framework**: React.js or Streamlit (depending on complexity requirements)
-- **UI Components**: Material-UI or Tailwind CSS
-
-### DevOps & Deployment
-- **Containerization**: Docker
-- **Orchestration**: Docker Compose or Kubernetes
-- **Cloud Platform**: AWS (EC2, S3, Lambda, SageMaker)
-- **CI/CD**: GitHub Actions
+- **Docker**: Containerized application
+- **Hugging Face Spaces**: Demo deployment
+- **Gradio**: Web interface
 
 ## Project Structure
 
 ```
 ml-app-deployment-proj/
-├── data/                      # Dataset and recipe database
-│   ├── raw/                   # Raw ingredient images
-│   ├── processed/             # Preprocessed data
-│   └── recipes/               # Recipe database
-├── models/                    # ML models
-│   ├── ingredient_detection/  # YOLO models
-│   ├── recipe_matching/       # NLP models
-│   └── checkpoints/           # Model weights
-├── src/                       # Source code
-│   ├── computer_vision/       # CV pipeline
-│   ├── nlp/                   # Recipe matching
-│   ├── api/                   # Backend API
-│   └── frontend/              # GUI application
-├── notebooks/                 # Jupyter notebooks for experimentation
-├── tests/                     # Unit and integration tests
-├── docker/                    # Docker configurations
-├── deployment/                # Deployment scripts and configs
-├── docs/                      # Documentation
-├── requirements.txt           # Python dependencies
-├── docker-compose.yml         # Multi-container setup
-└── README.md                  # This file
+├── app/                    # Gradio interface
+│   └── main.py
+├── src/
+│   ├── vision/            # CNN and YOLO detection
+│   ├── nlp/               # TF-IDF, embeddings, retrieval
+│   └── utils/             # Bloom filter, metrics
+├── data/
+│   ├── fridge_photos_sample/    # Sample images (in Git)
+│   └── recipes_sample/          # Sample recipes (in Git)
+├── models/                # Trained model weights
+├── notebooks/             # Experiments and training
+├── tests/                 # Unit tests
+└── config.yaml           # Configuration
 ```
 
-## Installation
+## Quick Start
 
-### Prerequisites
-
-- Python 3.10+
-- [uv](https://github.com/astral-sh/uv) - Fast Python package installer (auto-installed by setup script)
-- Docker and Docker Compose (optional, for containerized deployment)
-- AWS CLI (optional, for deployment)
-- CUDA-capable GPU (recommended for model training)
-
-### Quick Setup (Recommended)
+### Setup
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+# Clone repository
+git clone <repo-url>
 cd ml-app-deployment-proj
 
-# Run automated setup (installs uv and dependencies)
+# Install dependencies (uses uv for speed)
 ./setup.sh
+
+# Or manual setup
+pip install -e ".[dev]"
 ```
 
-### Manual Setup
+### Run the App
 
 ```bash
-# Install uv (if not already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Activate environment
+source .venv/bin/activate
 
-# Create virtual environment with uv
-uv venv
-
-# Activate virtual environment
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-uv pip install -e ".[dev]"
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Run the application
+# Run Gradio interface
 python app/main.py
 ```
 
-### Docker Setup
+Access at `http://localhost:7860`
+
+## Development Workflow
+
+### 1. Train Detection Model
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up --build
-
-# Or use Make
-make docker-build
-make docker-run
-
-# Access the application at http://localhost:7860
+# See notebooks/02_model_training.ipynb
+jupyter notebook
 ```
 
-## Usage
+Train YOLOv8 on fridge photos dataset.
 
-### Basic Workflow
+### 2. Build Recipe Index
 
-1. **Launch the Application**
-   ```bash
-   python src/app.py
-   ```
+```bash
+# Implement in src/nlp/
+# - TF-IDF vectorization
+# - Embedding generation
+# - FAISS index building
+```
 
-2. **Upload a Photo**
-   - Click "Upload Photo" or use the camera feature
-   - Select a clear image of your fridge/pantry
+### 3. Test Integration
 
-3. **Review Detected Ingredients**
-   - Verify automatically detected ingredients
-   - Add or remove items manually if needed
+```bash
+# Run tests
+pytest
 
-4. **Browse Recipes**
-   - View recommended recipes sorted by match percentage
-   - Filter by dietary preferences, cooking time, or difficulty
-   - Select a recipe to view detailed instructions
+# Check code quality
+make format
+make lint
+```
 
-5. **Start Cooking!**
-   - Follow step-by-step instructions
-   - Generate shopping list for missing ingredients
+## Datasets
 
-## Development Roadmap
+### Included in Repository (for testing)
 
-### Phase 1: Core ML Pipeline (Target: Week 4)
-- [x] Project setup and architecture design
-- [x] Complete project skeleton with modular structure
-- [x] All core modules with placeholder functions
-- [ ] Data collection and preprocessing
-- [ ] YOLO model training for ingredient detection
-- [ ] Initial model evaluation and iteration
+- **Fridge Photos Sample**: 30 images (3.1 MB)
+- **Recipes Sample**: 100 recipes (872 KB)
 
-### Phase 2: Recipe Matching System (Target: Week 8)
-- [ ] Recipe database creation and curation
-- [ ] NLP pipeline for recipe embeddings
-- [ ] Similarity search implementation
-- [ ] Integration testing
+### Full Datasets (download separately)
 
-### Phase 3: Application Development (Target: Week 10)
-- [ ] Backend API development
-- [ ] Frontend GUI implementation
-- [ ] User authentication and preferences
-- [ ] End-to-end testing
+- **Fridge Photos**: 3,049 images from Roboflow
+- **Recipes**: 58,783 recipes with ingredients
 
-### Phase 4: Deployment (Target: Week 12)
-- [ ] Docker containerization
-- [ ] AWS infrastructure setup
-- [ ] CI/CD pipeline configuration
-- [ ] Performance optimization and monitoring
+See `data/README.md` for download instructions.
 
-### Our MVP Goals
+## Implementation Plan
 
-**High Confidence Areas**:
-- YOLO-based ingredient identification with reasonable accuracy
-- Functional data and NLP pipeline for recipe retrieval
-- Working GUI application with core features
+### Phase 1: Computer Vision (Weeks 1-4)
 
-**Areas of Concern**:
-- AWS deployment coordination among team members
-- Real-time performance optimization
-- Handling edge cases and diverse ingredient types
+- Train YOLOv8 on ingredient detection
+- Achieve reasonable accuracy on test set
+- Integrate with preprocessing pipeline
 
-## Deployment
+### Phase 2: Recipe Retrieval (Weeks 5-8)
 
-### AWS Architecture
+- Implement TF-IDF baseline
+- Build embedding-based search
+- Compare retrieval methods
+- Add Bloom filter for quick checks
 
-- **EC2 Instances**: Application hosting
-- **S3 Buckets**: Image storage and model artifacts
-- **Lambda Functions**: Serverless API endpoints (optional)
-- **SageMaker**: Model training and deployment (optional)
-- **RDS/DynamoDB**: Database services
+### Phase 3: Integration & UI (Weeks 9-10)
 
-### Deployment Considerations
+- Connect detection and retrieval
+- Build Gradio interface
+- End-to-end testing
 
-We face coordination challenges with multiple team members using shared AWS instances. Our approach includes:
+### Phase 4: Deployment (Weeks 11-12)
 
-- Infrastructure as code (Terraform/CloudFormation)
-- Proper access control and resource tagging
-- Clear deployment protocols and documentation
+- Docker containerization
+- Deploy to Hugging Face Spaces
+- Performance testing
+- Documentation
 
-### Monitoring
+## Technical Highlights
 
-We plan to implement:
+### What We'll Implement
 
-- CloudWatch for logging and metrics
-- Application performance monitoring
-- Cost tracking and optimization
+**From Class**:
+- Bloom filters for ingredient checks
+- Hash-based lookups
+- Approximate nearest neighbors (FAISS)
+- TF-IDF and cosine similarity
 
-## Contributing
+**Additional ML**:
+- CNN/YOLO for object detection
+- Transformer embeddings (Sentence-BERT)
+- Hybrid ranking systems
 
-This is our team project for a machine learning course. Team members should follow this workflow:
+### Evaluation Metrics
 
-1. Create a feature branch: `git checkout -b feature/your-feature-name`
-2. Make changes and commit: `git commit -m "Add feature description"`
-3. Push to the branch: `git push origin feature/your-feature-name`
-4. Create a Pull Request for team review
+**Detection**: Precision, Recall, F1, mAP
+**Retrieval**: Recall@K, nDCG@K, MRR
 
-### Coding Standards
+## Commands
 
-We follow these standards:
+```bash
+# Development
+make run              # Start app
+make test             # Run tests
+make format           # Format code
+make lint             # Check code quality
 
-- PEP 8 for Python code
-- Unit tests for new features
-- Documentation for functions and classes
-- README updates for significant changes
+# Docker
+make docker-build     # Build image
+make docker-run       # Run container
 
-## License
+# Training
+jupyter notebook      # Open notebooks
+```
 
-We use the MIT License for this project. See the [LICENSE](LICENSE) file for details.
+## Repository Organization
 
-## Contact
+We keep the full datasets locally (too large for Git):
+- Full fridge photos: ~400 MB
+- Full recipes: ~254 MB
 
-Team members can reach out to each other directly. External questions can be submitted through repository issues.
+Sample datasets are in Git for team testing and CI/CD.
+
+## Questions or Issues
+
+- Check `data/README.md` for dataset setup
+- Check `CONTRIBUTING.md` for development guidelines
+- Open an issue for bugs or questions
+
+## Course Context
+
+This project demonstrates practical ML deployment including:
+- Training and evaluating ML models
+- Information retrieval techniques
+- Data structures for efficiency
+- Containerization and deployment
+- Team collaboration with Git
 
 ---
 
-**Note**: We developed this project as our machine learning course final project. It demonstrates practical applications of computer vision, NLP, and cloud deployment technologies.
-
+**Note**: This is a student project for our ML course. We focus on learning and implementing core concepts rather than production-scale deployment.
