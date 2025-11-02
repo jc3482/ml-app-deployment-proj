@@ -56,7 +56,15 @@ data/embeddings/*
 !data/processed/.gitkeep
 !data/recipes/.gitkeep
 !data/fridge_photos/.gitkeep
+!data/fridge_photos/DATASET_INFO.md
 !data/embeddings/.gitkeep
+!data/README.md
+
+# Keep sample datasets for testing (small enough for Git)
+!data/fridge_photos_sample/
+!data/fridge_photos_sample/**
+!data/recipes_sample/
+!data/recipes_sample/**
 
 # Model files
 models/yolo/*.pt

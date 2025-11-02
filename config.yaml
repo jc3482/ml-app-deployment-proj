@@ -116,9 +116,19 @@ clustering:
 
 # Dataset Configuration
 datasets:
+  # Smart Refrigerator Dataset (Roboflow)
+  fridge_dataset:
+    enabled: true
+    path: "./data/fridge_photos"
+    data_yaml: "./data/fridge_photos/data.yaml"
+    classes: 30
+    train_images: 2895
+    valid_images: 103
+    test_images: 51
+    
   # Food-101
   food101:
-    enabled: true
+    enabled: false
     path: "./data/raw/food-101"
     classes: 101
     
@@ -128,11 +138,6 @@ datasets:
     path: "./data/raw/recipe1m"
     layers_path: "./data/raw/recipe1m/layers"
     images_path: "./data/raw/recipe1m/images"
-    
-  # Custom fridge dataset
-  fridge_dataset:
-    enabled: false
-    path: "./data/raw/fridge_custom"
 
 # Evaluation Metrics
 evaluation:
