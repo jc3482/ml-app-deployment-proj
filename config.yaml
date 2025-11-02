@@ -1,0 +1,225 @@
+# SmartPantry Configuration File
+
+# Project metadata
+project:
+  name: "SmartPantry"
+  version: "0.1.0"
+  description: "AI-powered fridge ingredient detection and recipe recommendation"
+
+# Paths
+paths:
+  # Data directories
+  data_root: "./data"
+  raw_data: "./data/raw"
+  processed_data: "./data/processed"
+  recipes_db: "./data/recipes"
+  fridge_photos: "./data/fridge_photos"
+  embeddings_cache: "./data/embeddings"
+  
+  # Model directories
+  models_root: "./models"
+  yolo_weights: "./models/yolo/best.pt"
+  embedding_model: "./models/embeddings"
+  checkpoints: "./models/checkpoints"
+  
+  # Output directories
+  logs: "./logs"
+  results: "./results"
+
+# YOLOv8 Detection Configuration
+detection:
+  model_name: "yolov8m"  # Options: yolov8n, yolov8s, yolov8m, yolov8l, yolov8x
+  confidence_threshold: 0.25
+  iou_threshold: 0.45
+  max_detections: 50
+  image_size: 640
+  device: "cuda"  # Options: cuda, mps, cpu
+  batch_size: 8
+  
+  # Post-processing
+  nms: true
+  agnostic_nms: false
+
+# Ingredient Processing
+ingredients:
+  # Name normalization
+  enable_normalization: true
+  normalization_method: "fuzzy"  # Options: exact, fuzzy, embedding
+  fuzzy_threshold: 85
+  
+  # Filtering
+  min_confidence: 0.3
+  blacklist: ["plate", "bowl", "container", "shelf"]
+  
+  # Aggregation
+  duplicate_threshold: 0.9
+
+# Embedding Configuration
+embeddings:
+  # Model selection
+  model_type: "sentence-bert"  # Options: sentence-bert, clip
+  model_name: "all-MiniLM-L6-v2"  # For Sentence-BERT
+  # model_name: "openai/clip-vit-base-patch32"  # For CLIP
+  
+  # Embedding parameters
+  max_length: 128
+  batch_size: 32
+  normalize: true
+  device: "cuda"
+  
+  # Cache settings
+  use_cache: true
+  cache_format: "npy"  # Options: npy, pkl, hdf5
+
+# Recipe Retrieval Configuration
+retrieval:
+  # FAISS parameters
+  index_type: "IVFFlat"  # Options: Flat, IVFFlat, HNSW
+  n_clusters: 100  # For IVF index
+  n_probe: 10  # Number of clusters to search
+  metric: "cosine"  # Options: cosine, l2, inner_product
+  
+  # Search parameters
+  top_k: 50
+  min_ingredient_match: 0.3  # Minimum 30% ingredient overlap
+  max_results: 20
+  
+  # Ranking weights
+  ingredient_overlap_weight: 0.6
+  semantic_similarity_weight: 0.3
+  popularity_weight: 0.1
+  
+  # Filtering
+  enable_filtering: true
+  dietary_restrictions: []  # e.g., ["vegetarian", "vegan", "gluten-free"]
+
+# Recipe Clustering
+clustering:
+  enable: true
+  method: "kmeans"  # Options: kmeans, hierarchical, dbscan
+  n_clusters: 5
+  features: ["cuisine", "difficulty", "cooking_time"]
+  
+  # Cuisine types
+  cuisine_types: 
+    - "Italian"
+    - "Japanese"
+    - "Chinese"
+    - "Mexican"
+    - "American"
+    - "Mediterranean"
+    - "Indian"
+    - "Thai"
+  
+  # Difficulty levels
+  difficulty_levels: ["Easy", "Medium", "Hard"]
+
+# Dataset Configuration
+datasets:
+  # Food-101
+  food101:
+    enabled: true
+    path: "./data/raw/food-101"
+    classes: 101
+    
+  # Recipe1M+
+  recipe1m:
+    enabled: true
+    path: "./data/raw/recipe1m"
+    layers_path: "./data/raw/recipe1m/layers"
+    images_path: "./data/raw/recipe1m/images"
+    
+  # Custom fridge dataset
+  fridge_dataset:
+    enabled: false
+    path: "./data/raw/fridge_custom"
+
+# Evaluation Metrics
+evaluation:
+  detection:
+    metrics: ["precision", "recall", "f1", "mAP", "mAP50", "mAP75"]
+    iou_thresholds: [0.5, 0.75, 0.95]
+    
+  retrieval:
+    metrics: ["recall@k", "ndcg@k", "mrr", "map"]
+    k_values: [1, 5, 10, 20]
+    
+  # Test split
+  test_size: 0.2
+  validation_size: 0.1
+
+# Gradio Interface Configuration
+gradio:
+  # Server settings
+  server_name: "0.0.0.0"
+  server_port: 7860
+  share: false
+  debug: false
+  
+  # Interface settings
+  title: "🥗 SmartPantry: Recipes from Your Fridge Cam"
+  description: "Upload a photo of your fridge and get personalized recipe recommendations!"
+  theme: "default"  # Options: default, huggingface, grass, peach
+  
+  # Input settings
+  max_images: 5
+  image_size: [640, 640]
+  
+  # Output settings
+  show_detection_viz: true
+  show_confidence_scores: true
+  max_recipes_display: 10
+
+# Deployment Configuration
+deployment:
+  # Hugging Face Spaces
+  huggingface:
+    space_name: "smartpantry"
+    hardware: "cpu-basic"  # Options: cpu-basic, cpu-upgrade, t4-small, t4-medium, a10g-small
+    sdk: "gradio"
+    python_version: "3.10"
+    
+  # AWS Configuration
+  aws:
+    region: "us-east-1"
+    ec2_instance_type: "g4dn.xlarge"
+    s3_bucket: "smartpantry-data"
+    lambda_memory: 3008
+    lambda_timeout: 300
+    
+  # Docker
+  docker:
+    base_image: "python:3.10-slim"
+    expose_port: 7860
+
+# Logging Configuration
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "./logs/smartpantry.log"
+  console: true
+  file_logging: true
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# Performance Optimization
+performance:
+  # Multi-threading
+  num_workers: 4
+  prefetch_factor: 2
+  
+  # Memory management
+  max_memory_cache: 2048  # MB
+  clear_cache_frequency: 100  # iterations
+  
+  # Batch processing
+  enable_batching: true
+  batch_timeout: 0.1  # seconds
+
+# Development Settings
+dev:
+  debug_mode: false
+  profile: false
+  seed: 42
+  deterministic: true
+
