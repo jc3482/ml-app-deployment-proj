@@ -162,7 +162,7 @@ gradio:
   debug: false
   
   # Interface settings
-  title: "🥗 SmartPantry: Recipes from Your Fridge Cam"
+  title: "SmartPantry: Recipes from Your Fridge Cam"
   description: "Upload a photo of your fridge and get personalized recipe recommendations!"
   theme: "default"  # Options: default, huggingface, grass, peach
   

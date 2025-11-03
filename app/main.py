@@ -236,7 +236,7 @@ class SmartPantryApp:
             if not ranked_recipes:
                 return "No recipes found matching your ingredients. Try adding more ingredients!"
             
-            output_lines = [f"# 🍳 Found {len(ranked_recipes)} Recipes!\n"]
+            output_lines = [f"# Found {len(ranked_recipes)} Recipes\n"]
             
             for i, recipe in enumerate(ranked_recipes[:max_results], 1):
                 output_lines.append(f"## {i}. {format_recipe_card(recipe)}")
@@ -268,10 +268,10 @@ class SmartPantryApp:
                 {gradio_config.get('description', 'Upload a photo of your fridge and get personalized recipe recommendations!')}
                 
                 ### How to use:
-                1. 📸 Upload a photo of your fridge or pantry
-                2. 🔍 Review detected ingredients
-                3. 🎛️ Adjust filters (optional)
-                4. 🍳 Get recipe recommendations!
+                1. Upload a photo of your fridge or pantry
+                2. Review detected ingredients
+                3. Adjust filters (optional)
+                4. Get recipe recommendations
                 """
             )
             
@@ -285,10 +285,10 @@ class SmartPantryApp:
                     )
                     
                     # Detection button
-                    detect_button = gr.Button("🔍 Detect Ingredients", variant="primary")
+                    detect_button = gr.Button("Detect Ingredients", variant="primary")
                     
                     # Filters
-                    gr.Markdown("### 🎛️ Filters (Optional)")
+                    gr.Markdown("### Filters (Optional)")
                     
                     cuisine_filter = gr.Dropdown(
                         choices=["Any"] + self.config.get("clustering", {}).get("cuisine_types", []),
@@ -319,17 +319,17 @@ class SmartPantryApp:
                     )
                     
                     # Recommend button
-                    recommend_button = gr.Button("🍳 Get Recipes!", variant="primary")
+                    recommend_button = gr.Button("Get Recipes", variant="primary")
                 
                 with gr.Column(scale=1):
                     # Detection results
-                    gr.Markdown("### 🔍 Detected Ingredients")
+                    gr.Markdown("### Detected Ingredients")
                     ingredient_output = gr.Markdown()
                     detection_viz = gr.Image(label="Detection Visualization")
             
             # Recipe recommendations
             gr.Markdown("---")
-            gr.Markdown("### 📖 Recipe Recommendations")
+            gr.Markdown("### Recipe Recommendations")
             recipe_output = gr.Markdown()
             
             # Store ingredients in state
