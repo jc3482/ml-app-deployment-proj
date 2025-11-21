@@ -158,7 +158,15 @@ class CustomDetector(nn.Module):
         else:
             ingredient_names = [f"Class {l}" for l in labels]
 
-        # 5. Visualization (Just return original image, no boxes)
+        # 5. Filter for high confidence ingredients (>= 0.6)
+        high_conf_ingredients = []
+        high_conf_threshold = 0.6
+
+        for name, score in zip(ingredient_names, scores):
+            if score >= high_conf_threshold:
+                high_conf_ingredients.append(name)
+
+        # 6. Visualization (Just return original image, no boxes)
         # Optionally overlay text list
         viz_image = None
         if visualize:
@@ -168,6 +176,7 @@ class CustomDetector(nn.Module):
         return {
             "ingredients": ingredient_names,
             "confidences": scores.tolist(),
+            "high_confidence_ingredients": high_conf_ingredients,
             "boxes": [],  # No boxes for classification
             "visualization": viz_image,
         }

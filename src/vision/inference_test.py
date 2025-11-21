@@ -106,10 +106,13 @@ def main():
 
             ingredients = results["ingredients"]
             confidences = results["confidences"]
+            high_conf = results.get("high_confidence_ingredients", [])
 
-            print(f"  Detected {len(ingredients)} ingredients:")
+            print(f"  Detected {len(ingredients)} ingredients (threshold >= 0.1):")
             for ing, conf in zip(ingredients, confidences):
                 print(f"    - {ing}: {conf:.1%}")
+
+            print(f"  High Confidence Ingredients (>= 60%): {high_conf}")
 
             if len(ingredients) == 0:
                 print("    (No ingredients detected above threshold)")
