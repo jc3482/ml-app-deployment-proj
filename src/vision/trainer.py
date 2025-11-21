@@ -12,11 +12,12 @@ from typing import Dict, Optional
 import yaml
 from tqdm import tqdm
 import logging
+import sys
 
 from .detector import CustomDetector
 from .dataset import YOLODataset, collate_fn
 from .loss import DetectionLoss
-from .utils import calculate_map, non_max_suppression
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -127,28 +128,24 @@ class DetectionTrainer:
         total_obj_loss = 0.0
         num_batches = 0
 
-        # Create progress bar with smoother updates
+        # Simple logging instead of progress bar to avoid terminal spam
         total_batches = len(self.train_loader)
-        pbar = tqdm(
-            self.train_loader,
-            desc=f"Epoch {self.current_epoch+1}/{self.epochs}",
-            mininterval=0.5,  # Update at most every 0.5 seconds
-            smoothing=0.1,  # Smooth the loss display
+        logger.info(
+            f"Epoch {self.current_epoch+1}/{self.epochs} started. Total batches: {total_batches}"
         )
 
-        for batch_idx, batch in enumerate(pbar):
+        for batch_idx, batch in enumerate(self.train_loader):
             images = batch["images"].to(self.device)
             targets = {
+                "targets": batch["targets"].to(self.device),
                 "images": images,
-                "boxes": batch["boxes"],
-                "labels": batch["labels"],
             }
 
             # Forward pass
-            cls_pred, reg_pred, obj_pred = self.model(images)
+            logits = self.model(images)
 
             # Compute loss
-            loss_dict = self.criterion(cls_pred, reg_pred, obj_pred, targets)
+            loss_dict = self.criterion(logits, None, None, targets)
             loss = loss_dict["loss"]
 
             # Check for NaN or Inf loss
@@ -166,9 +163,9 @@ class DetectionTrainer:
                 self.model.parameters(), max_norm=grad_clip_norm
             )
 
-            # Log gradient norm if it's too large
-            if grad_norm > grad_clip_norm * 0.9:
-                logger.warning(f"Large gradient norm: {grad_norm:.4f}")
+            # Log gradient norm if it's too large (use debug to avoid spam)
+            if grad_norm > grad_clip_norm * 2.0:
+                logger.debug(f"Large gradient norm: {grad_norm:.4f}")
 
             self.optimizer.step()
 
@@ -179,10 +176,15 @@ class DetectionTrainer:
             total_obj_loss += loss_dict["obj_loss"].item()
             num_batches += 1
 
-            # Update progress bar less frequently (every 10 batches or at end)
-            if batch_idx % 10 == 0 or batch_idx == total_batches - 1:
+            # Log progress every 20 batches (or 10% for large datasets)
+            log_interval = max(20, total_batches // 10)
+            if (batch_idx + 1) % log_interval == 0 or (batch_idx + 1) == total_batches:
                 avg_loss_so_far = total_loss / num_batches
-                pbar.set_postfix({"loss": f"{avg_loss_so_far:.4f}"})
+                progress_pct = (batch_idx + 1) / total_batches * 100
+                logger.info(
+                    f"Epoch {self.current_epoch+1} [{batch_idx+1}/{total_batches}] "
+                    f"({progress_pct:.0f}%) Loss: {avg_loss_so_far:.4f}"
+                )
 
         # Average losses
         avg_loss = total_loss / num_batches
@@ -207,44 +209,25 @@ class DetectionTrainer:
         all_predictions = []
         all_ground_truth = []
 
-        for batch in tqdm(self.val_loader, desc="Validating", leave=False, mininterval=0.5):
+        logger.info("Starting validation...")
+        for batch_idx, batch in enumerate(self.val_loader):
             images = batch["images"].to(self.device)
             targets = {
+                "targets": batch["targets"].to(self.device),
                 "images": images,
-                "boxes": batch["boxes"],
-                "labels": batch["labels"],
             }
 
             # Forward pass
-            cls_pred, reg_pred, obj_pred = self.model(images)
+            logits = self.model(images)
 
             # Compute loss
-            loss_dict = self.criterion(cls_pred, reg_pred, obj_pred, targets)
+            loss_dict = self.criterion(logits, None, None, targets)
             total_loss += loss_dict["loss"].item()
             num_batches += 1
-
-            # Collect predictions for mAP calculation
-            # (Simplified - full implementation would decode predictions)
-            for i in range(len(batch["boxes"])):
-                all_ground_truth.append(
-                    {
-                        "boxes": batch["boxes"][i],
-                        "labels": batch["labels"][i],
-                    }
-                )
-                # Placeholder for predictions
-                all_predictions.append(
-                    {
-                        "boxes": batch["boxes"][i],  # Placeholder
-                        "labels": batch["labels"][i],  # Placeholder
-                        "scores": torch.ones(len(batch["labels"][i])),  # Placeholder
-                    }
-                )
 
         avg_loss = total_loss / num_batches
 
         # Calculate mAP (simplified)
-        # map_score = calculate_map(all_predictions, all_ground_truth)
         map_score = 0.0  # Placeholder
 
         return {

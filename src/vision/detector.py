@@ -5,28 +5,27 @@ Complete custom detector model combining backbone, neck, and head.
 import torch
 import torch.nn as nn
 from typing import List, Tuple, Dict, Optional, Union
+import numpy as np
+from PIL import Image
 
-from .backbone import ResNetBackbone, FeaturePyramidNetwork
-from .head import DetectionHead
+from .utils import visualize_detections
+from .transforms import get_val_transforms, get_inference_transforms
 
 
 class CustomDetector(nn.Module):
     """
-    Custom object detector using ResNet backbone + FPN + Detection Head.
-
-    Architecture:
-    1. ResNet50 backbone (pretrained) -> multi-scale features
-    2. Feature Pyramid Network -> fused multi-scale features
-    3. Detection Head -> class, bbox, objectness predictions
+    Custom multi-label ingredient classifier using ResNet50.
+    Simplified from object detector for stability and performance.
     """
 
     def __init__(
         self,
         num_classes: int = 30,
+        class_names: Optional[List[str]] = None,
         backbone_pretrained: bool = True,
+        # Legacy parameters for backward compatibility
         fpn_out_channels: int = 256,
         head_hidden_channels: int = 256,
-        # Legacy parameters for backward compatibility
         model_path: Optional[str] = None,
         confidence_threshold: float = 0.25,
         iou_threshold: float = 0.45,
@@ -34,142 +33,144 @@ class CustomDetector(nn.Module):
         image_size: int = 640,
     ):
         """
-        Initialize custom detector.
-
-        Args:
-            num_classes: Number of object classes (30 for ingredients)
-            backbone_pretrained: Whether to use pretrained ResNet weights
-            fpn_out_channels: Output channels for FPN
-            head_hidden_channels: Hidden channels in detection head
-            model_path: Legacy parameter (ignored, kept for compatibility)
-            confidence_threshold: Legacy parameter (stored for later use)
-            iou_threshold: Legacy parameter (stored for later use)
-            device: Legacy parameter (stored for later use)
-            image_size: Legacy parameter (stored for later use)
+        Initialize custom classifier.
         """
         super().__init__()
         self.num_classes = num_classes
-
-        # Store legacy parameters for compatibility
-        self.confidence_threshold = confidence_threshold
-        self.iou_threshold = iou_threshold
+        self.class_names = class_names or [f"Class {i}" for i in range(num_classes)]
         self.device = device
         self.image_size = image_size
+        self.confidence_threshold = confidence_threshold
 
-        # Backbone: ResNet50
-        self.backbone = ResNetBackbone(pretrained=backbone_pretrained)
-        backbone_channels = self.backbone.get_out_channels()
+        # Use torchvision ResNet50 directly
+        from torchvision.models import resnet50, ResNet50_Weights
 
-        # Neck: Feature Pyramid Network
-        self.neck = FeaturePyramidNetwork(
-            in_channels_list=backbone_channels, out_channels=fpn_out_channels
-        )
+        weights = ResNet50_Weights.IMAGENET1K_V2 if backbone_pretrained else None
+        self.backbone = resnet50(weights=weights)
 
-        # Head: Detection head
-        self.head = DetectionHead(
-            in_channels=fpn_out_channels,
-            num_classes=num_classes,
-            num_anchors=1,  # Anchor-free approach
-            hidden_channels=head_hidden_channels,
-        )
+        # Replace final FC layer for multi-label classification
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Sequential(nn.Dropout(0.2), nn.Linear(in_features, num_classes))
 
-        # Feature map strides (relative to input image)
-        # These correspond to the strides of layer2, layer3, layer4
-        self.strides = [8, 16, 32]
+        # Freeze all except Layer 4 and FC for fine-tuning
+        for name, param in self.backbone.named_parameters():
+            if "layer4" not in name and "fc" not in name:
+                param.requires_grad = False
+
+    def train(self, mode: bool = True):
+        """
+        Set training mode.
+        Overridden to keep frozen layers in eval mode.
+        """
+        super().train(mode)
+
+        # Keep frozen layers in eval mode (BN stats)
+        for name, module in self.backbone.named_modules():
+            if (
+                "layer4" not in name
+                and "fc" not in name
+                and not isinstance(module, type(self.backbone))
+            ):
+                module.eval()
+
+        return self
 
     def forward(
         self, x: torch.Tensor, targets: Optional[Dict] = None  # noqa: ARG002
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor], List[torch.Tensor]]:
+    ) -> torch.Tensor:
         """
-        Forward pass through the detector.
-
-        Args:
-            x: Input images tensor of shape (B, 3, H, W)
-            targets: Optional ground truth targets for training
-
-        Returns:
-            Tuple of (cls_pred, reg_pred, obj_pred):
-            - cls_pred: List of classification predictions for each scale
-            - reg_pred: List of regression predictions for each scale
-            - obj_pred: List of objectness predictions for each scale
+        Forward pass: Image -> Logits
         """
-        # Extract features using backbone
-        backbone_features = self.backbone(x)
-
-        # Fuse features using FPN
-        fpn_features = self.neck(backbone_features)
-
-        # Generate predictions using detection head
-        cls_pred, reg_pred, obj_pred = self.head(fpn_features)
-
-        return cls_pred, reg_pred, obj_pred
+        return self.backbone(x)
 
     def predict(
         self,
         x: torch.Tensor,
         conf_threshold: float = 0.25,
+        # Legacy args
         nms_threshold: float = 0.45,
         max_detections: int = 50,
     ) -> List[Dict]:
         """
-        Predict objects in input images.
-
-        Args:
-            x: Input images tensor of shape (B, 3, H, W)
-            conf_threshold: Confidence threshold for filtering
-            nms_threshold: IoU threshold for NMS
-            max_detections: Maximum number of detections per image
-
-        Returns:
-            List of detection dictionaries, one per image
+        Predict ingredients in input images.
         """
         self.eval()
         with torch.no_grad():
-            cls_pred, reg_pred, obj_pred = self.forward(x)
+            logits = self.forward(x)
+            probs = torch.sigmoid(logits)
 
-        # Process predictions (will be implemented in utils)
-        # This is a placeholder - actual post-processing in utils.py
-        detections = self._post_process(
-            cls_pred,
-            reg_pred,
-            obj_pred,
-            conf_threshold,
-            nms_threshold,
-            max_detections,
-            x.shape[2:],  # Original image size
-        )
+        results = []
+        for p in probs:
+            # Filter by threshold
+            mask = p > conf_threshold
+            indices = torch.where(mask)[0]
+            scores = p[mask]
+            results.append({"labels": indices, "scores": scores})
+        return results
 
-        return detections
-
-    def _post_process(
+    def detect_ingredients(
         self,
-        cls_pred: List[torch.Tensor],  # noqa: ARG002
-        reg_pred: List[torch.Tensor],  # noqa: ARG002
-        obj_pred: List[torch.Tensor],  # noqa: ARG002
-        conf_threshold: float,  # noqa: ARG002
-        nms_threshold: float,  # noqa: ARG002
-        max_detections: int,  # noqa: ARG002
-        img_size: Tuple[int, int],  # noqa: ARG002
-    ) -> List[Dict]:
+        image: Union[str, Image.Image, np.ndarray],
+        visualize: bool = True,
+        conf_threshold: Optional[float] = None,
+    ) -> Dict:
         """
-        Post-process predictions to get final detections.
-        This is a simplified version - full implementation in utils.py
-
-        Args:
-            cls_pred: Classification predictions
-            reg_pred: Regression predictions
-            obj_pred: Objectness predictions
-            conf_threshold: Confidence threshold
-            nms_threshold: NMS IoU threshold
-            max_detections: Max detections per image
-            img_size: Original image size (H, W)
-
-        Returns:
-            List of detection dictionaries
+        End-to-end detection pipeline for a single image.
         """
-        # This will be implemented using utils functions
-        # For now, return empty list
-        return []
+        # 1. Load Image
+        if isinstance(image, str):
+            image = Image.open(image).convert("RGB")
+        elif isinstance(image, np.ndarray):
+            image = Image.fromarray(image).convert("RGB")
+
+        # Keep original image for visualization (H, W, 3)
+        orig_image = np.array(image)
+
+        # 2. Preprocess
+        transforms = get_inference_transforms(img_size=self.image_size)
+        # transforms expects numpy array
+        transformed = transforms(image=orig_image)
+        img_tensor = transformed["image"]
+
+        # Convert to tensor (H, W, C) -> (1, C, H, W)
+        if isinstance(img_tensor, np.ndarray):
+            img_tensor = torch.from_numpy(img_tensor).permute(2, 0, 1)
+
+        img_tensor = img_tensor.unsqueeze(0).float().to(self.device)
+
+        # 3. Predict
+        threshold = conf_threshold if conf_threshold is not None else self.confidence_threshold
+        detections = self.predict(img_tensor, conf_threshold=threshold)
+
+        # Unpack single image results
+        result = detections[0]
+        scores = result["scores"].cpu().numpy()
+        labels = result["labels"].cpu().numpy()
+
+        # 4. Map Labels to Names
+        ingredient_names = []
+        if self.class_names:
+            for label in labels:
+                if 0 <= label < len(self.class_names):
+                    ingredient_names.append(self.class_names[int(label)])
+                else:
+                    ingredient_names.append(f"Class {label}")
+        else:
+            ingredient_names = [f"Class {l}" for l in labels]
+
+        # 5. Visualization (Just return original image, no boxes)
+        # Optionally overlay text list
+        viz_image = None
+        if visualize:
+            viz_image = orig_image.copy()
+            # Could add text overlay here if needed
+
+        return {
+            "ingredients": ingredient_names,
+            "confidences": scores.tolist(),
+            "boxes": [],  # No boxes for classification
+            "visualization": viz_image,
+        }
 
     def get_model_info(self) -> Dict:
         """Get model information."""
@@ -177,12 +178,11 @@ class CustomDetector(nn.Module):
         trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
 
         return {
+            "type": "Multi-label Classifier",
+            "backbone": "ResNet50",
             "num_classes": self.num_classes,
             "total_parameters": total_params,
             "trainable_parameters": trainable_params,
-            "backbone": "ResNet50",
-            "neck": "FPN",
-            "head": "Custom Detection Head",
         }
 
 

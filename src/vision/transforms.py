@@ -48,7 +48,7 @@ def get_train_transforms(img_size: int = 640) -> A.Compose:
 
 def get_val_transforms(img_size: int = 640) -> A.Compose:
     """
-    Get validation/test data preprocessing pipeline (no augmentation).
+    Get validation data preprocessing pipeline (expects bboxes).
 
     Args:
         img_size: Target image size (square)
@@ -73,6 +73,31 @@ def get_val_transforms(img_size: int = 640) -> A.Compose:
             label_fields=["class_labels"],
             min_visibility=0.1,
         ),
+    )
+
+
+def get_inference_transforms(img_size: int = 640) -> A.Compose:
+    """
+    Get inference data preprocessing pipeline (NO bboxes expected).
+
+    Args:
+        img_size: Target image size (square)
+
+    Returns:
+        Albumentations compose transform
+    """
+    return A.Compose(
+        [
+            # Resize and pad
+            A.LongestMaxSize(max_size=img_size, interpolation=1, p=1.0),
+            A.PadIfNeeded(
+                min_height=img_size, min_width=img_size, border_mode=0, value=(114, 114, 114), p=1.0
+            ),
+            # Normalize
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, p=1.0
+            ),
+        ]
     )
 
 

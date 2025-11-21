@@ -58,6 +58,8 @@ class YOLODataset(Dataset):
         self.img_size = img_size
         self.augment = augment
         self.class_names = class_names or []
+        # Ensure num_classes is available for target vector creation
+        self.num_classes = len(self.class_names) if self.class_names else 30
 
         # Get all image files
         self.image_files = sorted(
@@ -138,22 +140,19 @@ class YOLODataset(Dataset):
             # Fallback: if not normalized, divide by 255
             image = torch.from_numpy(np.array(image)).permute(2, 0, 1).float() / 255.0
 
-        # Handle boxes and labels (albumentations may filter some boxes)
-        if boxes_list and len(boxes_list) > 0:
-            # Convert to tensor
-            boxes = torch.tensor(boxes_list, dtype=torch.float32)
-            labels = torch.tensor(labels_list, dtype=torch.long)
-        else:
-            # No objects in image
-            boxes = torch.zeros((0, 4), dtype=torch.float32)
-            labels = torch.zeros((0,), dtype=torch.long)
+        # Create Multi-hot target vector (num_classes,)
+        target_vector = torch.zeros(self.num_classes, dtype=torch.float32)
+        if labels_list is not None and len(labels_list) > 0:
+            for label in labels_list:
+                # Ensure label is within range
+                label_idx = int(label)
+                if 0 <= label_idx < self.num_classes:
+                    target_vector[label_idx] = 1.0
 
         return {
             "image": image,
-            "boxes": boxes,
-            "labels": labels,
+            "target": target_vector,  # Multi-hot
             "image_id": img_path.stem,
-            "original_size": (original_h, original_w),
         }
 
     def _load_labels(
@@ -325,7 +324,7 @@ class YOLODataset(Dataset):
 
 def collate_fn(batch: List[Dict]) -> Dict:
     """
-    Custom collate function for batching variable-length targets.
+    Custom collate function for batching targets.
 
     Args:
         batch: List of samples from dataset
@@ -334,17 +333,11 @@ def collate_fn(batch: List[Dict]) -> Dict:
         Batched dictionary
     """
     images = torch.stack([item["image"] for item in batch])
-
-    # Boxes and labels have variable lengths, keep as lists
-    boxes = [item["boxes"] for item in batch]
-    labels = [item["labels"] for item in batch]
+    targets = torch.stack([item["target"] for item in batch])
     image_ids = [item["image_id"] for item in batch]
-    original_sizes = [item["original_size"] for item in batch]
 
     return {
         "images": images,
-        "boxes": boxes,
-        "labels": labels,
+        "targets": targets,
         "image_ids": image_ids,
-        "original_sizes": original_sizes,
     }

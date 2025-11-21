@@ -7,12 +7,7 @@ from .preprocessor import ImagePreprocessor
 from .dataset import YOLODataset
 from .trainer import DetectionTrainer
 from .loss import DetectionLoss
-from .utils import (
-    non_max_suppression,
-    calculate_iou,
-    calculate_map,
-    visualize_detections,
-)
+from .utils import visualize_detections
 
 __all__ = [
     "CustomDetector",
@@ -21,8 +16,5 @@ __all__ = [
     "YOLODataset",
     "DetectionTrainer",
     "DetectionLoss",
-    "non_max_suppression",
-    "calculate_iou",
-    "calculate_map",
     "visualize_detections",
 ]
