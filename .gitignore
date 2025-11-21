@@ -47,18 +47,10 @@ uv.lock
 *.ipynb_checkpoints/
 
 # Data files
-data/raw/*
+data/
 data/processed/*
 data/recipes/*
 data/fridge_photos/*
-data/embeddings/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/recipes/.gitkeep
-!data/fridge_photos/.gitkeep
-!data/fridge_photos/DATASET_INFO.md
-!data/embeddings/.gitkeep
-!data/README.md
 
 # Keep sample datasets for testing (small enough for Git)
 !data/fridge_photos_sample/
