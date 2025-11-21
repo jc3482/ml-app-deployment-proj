@@ -1,9 +1,43 @@
 # Recipe Matching System Workflow
 
+## Overview
+
+This system is part of the SmartPantry project. It processes recipe data and matches user-detected ingredients with recipes from the database.
+
+**Important: All commands should be run from the project root directory (`ml-app-deployment-proj/`).**
+
+## Directory Structure
+
+```
+ml-app-deployment-proj/                    # ← Run commands from here!
+├── data/
+│   ├── recipes/
+│   │   └── recipe_dataset_raw.csv        # Raw recipe data (input)
+│   ├── normalized_recipes.json           # After Step 2 (normalize)
+│   └── ontology_recipes.json             # After Step 3 (ontology)
+│
+├── recipe_matching_system/               # This subsystem
+│   ├── recipe_matcher/
+│   │   ├── bin/main.py                   # CLI entry point
+│   │   ├── utils/helpers.py              # Data I/O (path config here)
+│   │   ├── preprocess.py                 # Steps 1-2: normalize + ontology
+│   │   ├── retrieval_engine.py           # Retrieve & Rank
+│   │   └── pipeline.py                   # Full workflow orchestration
+│   └── tests/
+│
+└── src/
+    └── vision/                            # YOLO detector (produces ingredients)
+```
+
+**Data Flow:**
+1. YOLO detector (in `src/vision/`) detects ingredients from fridge photos
+2. Detected ingredients → recipe_matcher (this system) for recipe recommendations
+3. Or manually provide ingredients via CLI for testing
+
 ## Data Processing Pipeline
 
 ```
-data/recipe_dataset_raw.csv
+../data/recipes/recipe_dataset_raw.csv
          |
          | helpers.load_raw_recipes()
          v
@@ -12,7 +46,7 @@ data/recipe_dataset_raw.csv
          |
          | helpers.save_normalized_recipes()
          v
-data/normalized_recipes.json 
+../data/normalized_recipes.json 
          |
          | helpers.load_normalized_recipes()
          v
@@ -21,11 +55,11 @@ data/normalized_recipes.json
          |
          | helpers.save_ontology_recipes()
          v
-data/ontology_recipes.json
+../data/ontology_recipes.json
          |
          | helpers.load_ontology_recipes()
          v
-    User Query
+    User Query (from YOLO detector or manual input)
          |
          v
     retrieval_engine.py  <--- Two-stage Retrieve & Rank Architecture
@@ -60,50 +94,62 @@ Required packages:
 
 ### Step 2: Normalize Raw Dataset
 
+**Important:** Run this command from the project root directory (`ml-app-deployment-proj/`), not from `recipe_matching_system/`.
+
 ```bash
+# Make sure you're in the project root
+cd ml-app-deployment-proj/
+
+# Run normalization
 python -m recipe_matcher.bin.main normalize
 ```
 
 This runs:
-1. `helpers.load_raw_recipes()` - Load raw CSV
+1. `helpers.load_raw_recipes()` - Load raw CSV from `data/recipes/recipe_dataset_raw.csv`
 2. `preprocess.py (normalize)` - Clean and normalize ingredients
-3. `helpers.save_normalized_recipes()` - Save to data/normalized_recipes.json
+3. `helpers.save_normalized_recipes()` - Save to `data/normalized_recipes.json`
 
 ### Step 3: Apply Ontology Processing (Optional but Recommended)
 
 ```bash
+# From project root
 python -m recipe_matcher.bin.main ontology
 ```
 
 This runs:
-1. `helpers.load_normalized_recipes()` - Load normalized data
+1. `helpers.load_normalized_recipes()` - Load normalized data from `data/normalized_recipes.json`
 2. `preprocess.py (ontology)` - Canonicalize ingredients, map synonyms
-3. `helpers.save_ontology_recipes()` - Save to data/ontology_recipes.json
+3. `helpers.save_ontology_recipes()` - Save to `data/ontology_recipes.json`
 
 ### Step 4: Match Ingredients
 
 ```bash
-# Using ingredient list
+# From project root directory
+
+# Using ingredient list (comma-separated)
 python -m recipe_matcher.bin.main match --ingredients "apple,milk,butter"
 
-# Using JSON file
+# Using JSON file (if you have mock test data)
 python -m recipe_matcher.bin.main match --input data/mock_ingredients/case1.json
 
 # Skip ontology processing (use normalized data only)
 python -m recipe_matcher.bin.main match --ingredients "apple,milk" --no-ontology
+
+# Get more recommendations (default is 5)
+python -m recipe_matcher.bin.main match --ingredients "chicken,onion,garlic" --topk 10
 ```
 
 ## Module Responsibilities
 
 ### helpers.py
-- Pure data I/O
-- No business logic
+- Pure data I/O (no business logic)
+- **Path Configuration**: All paths are relative to project root
 - Functions:
-  - `load_raw_recipes()` - Read raw CSV
-  - `load_normalized_recipes()` - Read normalized JSON/CSV
-  - `load_ontology_recipes()` - Read ontology-processed JSON/CSV
-  - `save_normalized_recipes()` - Save normalized data
-  - `save_ontology_recipes()` - Save ontology data
+  - `load_raw_recipes()` - Read raw CSV from `data/recipes/recipe_dataset_raw.csv`
+  - `load_normalized_recipes()` - Read normalized JSON/CSV from `data/normalized_recipes.json`
+  - `load_ontology_recipes()` - Read ontology-processed JSON/CSV from `data/ontology_recipes.json`
+  - `save_normalized_recipes()` - Save normalized data to `data/` directory
+  - `save_ontology_recipes()` - Save ontology data to `data/` directory
 
 ### preprocess.py
 - Step 1 & 2: Ingredient preprocessing (combines normalize + ontology)
@@ -143,9 +189,18 @@ python -m recipe_matcher.bin.main match --ingredients "apple,milk" --no-ontology
 
 ## Python API Usage
 
+**Note:** When using the Python API, make sure your working directory is the project root (`ml-app-deployment-proj/`), or adjust the paths in `helpers.py` accordingly.
+
 ### Full Pipeline (Retrieve & Rank Architecture)
 
 ```python
+# Run this from project root: ml-app-deployment-proj/
+import sys
+import os
+
+# Make sure we're in the right directory
+os.chdir('/path/to/ml-app-deployment-proj')
+
 from recipe_matcher.pipeline import (
     normalize_recipe_dataset,
     apply_ontology_processing,
@@ -153,9 +208,13 @@ from recipe_matcher.pipeline import (
 )
 
 # Step 1: Normalize (first time only)
+# Reads: data/recipes/recipe_dataset_raw.csv
+# Writes: data/normalized_recipes.json
 normalize_recipe_dataset()
 
 # Step 2: Apply ontology (first time only)
+# Reads: data/normalized_recipes.json
+# Writes: data/ontology_recipes.json
 apply_ontology_processing()
 
 # Step 3: Match ingredients using Retrieve & Rank
@@ -231,20 +290,49 @@ pytest tests/
 pip install rapidfuzz
 ```
 
-### File not found: normalized_recipes.json
-Run normalization first:
+### File not found: recipe_dataset_raw.csv
+Make sure the raw recipe data is located at:
+```
+ml-app-deployment-proj/data/recipes/recipe_dataset_raw.csv
+```
+
+And run commands from the project root directory:
 ```bash
+cd ml-app-deployment-proj/
 python -m recipe_matcher.bin.main normalize
 ```
 
-### File not found: ontology_recipes.json
-Run ontology processing:
+### File not found: normalized_recipes.json
+Run normalization first (from project root):
 ```bash
+cd ml-app-deployment-proj/
+python -m recipe_matcher.bin.main normalize
+```
+
+This will create `data/normalized_recipes.json`.
+
+### File not found: ontology_recipes.json
+Run ontology processing (from project root):
+```bash
+cd ml-app-deployment-proj/
 python -m recipe_matcher.bin.main ontology
 ```
 
 Or use normalized data only:
 ```bash
 python -m recipe_matcher.bin.main match --ingredients "apple,milk" --no-ontology
+```
+
+### ModuleNotFoundError: recipe_matcher
+Make sure you're running from the project root and the module is installed:
+```bash
+cd ml-app-deployment-proj/
+pip install -e recipe_matching_system/
+```
+
+Or if using from the main project:
+```bash
+cd ml-app-deployment-proj/
+pip install -e .
 ```
 

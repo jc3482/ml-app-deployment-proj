@@ -9,8 +9,9 @@ from pathlib import Path
 
 
 # Path Configuration
+# Note: Paths are relative to project root (ml-app-deployment-proj/)
 DATA_DIR = Path("data")
-RAW_CSV_PATH = DATA_DIR / "recipe_dataset_raw.csv"
+RAW_CSV_PATH = DATA_DIR / "recipes" / "recipe_dataset_raw.csv"
 NORMALIZED_JSON_PATH = DATA_DIR / "normalized_recipes.json"
 NORMALIZED_CSV_PATH = DATA_DIR / "normalized_recipes.csv"
 ONTOLOGY_JSON_PATH = DATA_DIR / "ontology_recipes.json"
