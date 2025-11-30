@@ -1,0 +1,484 @@
+/* SmartPantry - Elegant Beige/Tan Theme CSS */
+
+/* Global Styles - Beige/Tan Theme - Full Width */
+.gradio-container {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f5f1eb;
+}
+
+/* Override Gradio's default container constraints */
+#root,
+#root > div,
+.container {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+body {
+    background: #f5f1eb;
+}
+
+/* Header Styling - Larger fonts */
+h1 {
+    color: #8b7355;
+    font-size: 3.5em;
+    font-weight: 300;
+    margin-bottom: 0.2em;
+    letter-spacing: 0.05em;
+    font-family: 'Georgia', serif;
+}
+
+h2 {
+    color: #2d2d2d;
+    font-size: 2em;
+    font-weight: 400;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+    border-bottom: 1px solid #d4c4b0;
+    padding-bottom: 0.5em;
+    font-family: 'Georgia', serif;
+}
+
+h3 {
+    color: #5a4a3a;
+    font-size: 1.5em;
+    font-weight: 400;
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.02em;
+}
+
+/* Button Styling - Elegant beige - Larger font */
+button.primary,
+button[class*="primary"],
+button[type="button"][class*="btn"],
+button[data-testid*="button"] {
+    background: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border: 1px solid #b8a896 !important;
+    border-radius: 4px !important;
+    padding: 0.85em 2.2em !important;
+    font-weight: 400 !important;
+    font-family: 'Georgia', serif !important;
+    transition: all 0.3s ease !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    font-size: 1em !important;
+}
+
+button.primary:hover,
+button[class*="primary"]:hover,
+button[type="button"][class*="btn"]:hover,
+button[data-testid*="button"]:hover {
+    background: #c4b4a0 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Slider Styling - Beige theme - Remove all orange */
+input[type="range"] {
+    accent-color: #d4c4b0 !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: transparent !important;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) - Track */
+input[type="range"]::-webkit-slider-runnable-track {
+    background: #e8ddd4 !important;
+    height: 6px !important;
+    border-radius: 3px !important;
+    border: none !important;
+}
+
+/* Webkit - Thumb (draggable circle) */
+input[type="range"]::-webkit-slider-thumb {
+    background: #d4c4b0 !important;
+    border: 1px solid #b8a896 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-top: -6px !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+}
+
+/* Webkit - Progress fill (the filled portion) */
+input[type="range"]::-webkit-slider-container {
+    background: linear-gradient(to right, #d4c4b0 0%, #d4c4b0 var(--value, 50%), transparent var(--value, 50%), transparent 100%) !important;
+}
+
+/* Firefox - Track */
+input[type="range"]::-moz-range-track {
+    background: #e8ddd4 !important;
+    height: 6px !important;
+    border-radius: 3px !important;
+    border: none !important;
+}
+
+/* Firefox - Thumb */
+input[type="range"]::-moz-range-thumb {
+    background: #d4c4b0 !important;
+    border: 1px solid #b8a896 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+}
+
+/* Firefox - Progress fill */
+input[type="range"]::-moz-range-progress {
+    background: #d4c4b0 !important;
+    height: 6px !important;
+    border-radius: 3px !important;
+}
+
+/* Override any Gradio default orange colors */
+input[type="range"]:focus {
+    outline: none !important;
+}
+
+/* Remove any orange from slider value display */
+.slider-value,
+.slider-label {
+    color: #5a4a3a !important;
+}
+
+/* Number input styling */
+input[type="number"] {
+    border: 1px solid #d4c4b0 !important;
+    border-radius: 4px !important;
+    color: #3d3d3d !important;
+    font-family: 'Georgia', serif !important;
+}
+
+input[type="number"]:focus {
+    border-color: #b8a896 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(212, 196, 176, 0.2) !important;
+}
+
+/* Image Upload Area */
+.image-container {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #d4c4b0;
+    transition: all 0.3s ease;
+}
+
+.image-container:hover {
+    border-color: #b8a896;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Markdown Output Styling - Single layer box - Larger font */
+.markdown-text {
+    background: #ffffff;
+    border: 1px solid #d4c4b0;
+    border-radius: 4px;
+    padding: 1.5em;
+    line-height: 1.8;
+    font-family: 'Georgia', serif;
+    color: #3d3d3d;
+    font-size: 1.05em;
+}
+
+/* Recipe Cards and Collapsible Sections */
+details {
+    background: #ffffff;
+    border: 1px solid #d4c4b0;
+    border-radius: 4px;
+    padding: 0;
+    margin: 1em 0;
+    transition: all 0.3s ease;
+}
+
+details:hover {
+    border-color: #b8a896;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+details[open] {
+    background: #ffffff;
+    border-color: #b8a896;
+}
+
+summary {
+    cursor: pointer;
+    font-weight: 400;
+    color: #5a4a3a;
+    padding: 1.5em;
+    user-select: none;
+    font-family: 'Georgia', serif;
+    transition: color 0.2s ease;
+    list-style: none;
+    display: block;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+summary::before {
+    content: '▶ ';
+    display: inline-block;
+    margin-right: 0.5em;
+    transition: transform 0.2s ease;
+    color: #8b7355;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+summary:hover {
+    color: #2d2d2d;
+}
+
+/* Ingredient List - Single layer */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+ul li {
+    background: #ffffff;
+    border: 1px solid #e8ddd4;
+    padding: 0.7em 1.2em;
+    margin: 0.5em 0;
+    border-radius: 4px;
+    color: #3d3d3d;
+    transition: all 0.2s ease;
+    font-family: 'Georgia', serif;
+    font-size: 1.05em;
+}
+
+ul li:hover {
+    background: #faf8f5;
+    border-color: #d4c4b0;
+    transform: translateX(4px);
+}
+
+/* Slider Container */
+.slider-container {
+    padding: 1em 0;
+}
+
+/* Text Colors - Larger base font */
+p {
+    color: #3d3d3d;
+    line-height: 1.8;
+    font-family: 'Georgia', serif;
+    font-size: 1.05em;
+}
+
+body {
+    font-size: 16px;
+}
+
+/* Labels and form text */
+label {
+    font-size: 1.1em !important;
+    color: #5a4a3a !important;
+    font-family: 'Georgia', serif !important;
+}
+
+/* Recipe Score Badge - Larger */
+.score-badge {
+    display: inline-block;
+    background: #d4c4b0;
+    color: #2d2d2d;
+    padding: 0.3em 0.7em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-weight: 400;
+    margin-left: 0.5em;
+    font-family: 'Georgia', serif;
+}
+
+/* Recipe content box - Larger font */
+.recipe-box {
+    background: #ffffff;
+    border: 1px solid #d4c4b0;
+    border-radius: 4px;
+    padding: 1.8em;
+    margin: 1.2em 0;
+    transition: all 0.3s ease;
+    font-size: 1.05em;
+}
+
+.recipe-box:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Full width container */
+.main-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Override Gradio's default max-width */
+#component-0,
+#component-1,
+#component-2 {
+    max-width: 100% !important;
+}
+
+/* Remove all orange colors from Gradio components */
+* {
+    --gradio-primary: #d4c4b0 !important;
+    --gradio-primary-hover: #c4b4a0 !important;
+    --gradio-primary-focus: #b8a896 !important;
+}
+
+/* Override any orange in progress bars, sliders, etc. */
+.progress-bar,
+[class*="progress"],
+[style*="orange"],
+[style*="#ff"],
+[style*="#FF"] {
+    background-color: #d4c4b0 !important;
+    color: #d4c4b0 !important;
+}
+
+/* Force beige on any gradient that might be orange */
+[style*="gradient"] {
+    background-image: linear-gradient(to right, #d4c4b0, #c4b4a0) !important;
+}
+
+/* Additional spacing improvements */
+.recipe-box {
+    margin-bottom: 1.5em !important;
+}
+
+/* Better visual hierarchy */
+h3 {
+    margin-bottom: 0.8em !important;
+}
+
+/* Improved ingredient list spacing */
+ul {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
+}
+
+/* Image Upload Area - Override orange buttons (upload/webcam/paste) */
+.image-upload-area button,
+.image-upload-area [role="button"],
+[data-testid*="upload"] button,
+[data-testid*="webcam"] button,
+[data-testid*="paste"] button,
+button[aria-label*="upload"],
+button[aria-label*="Upload"],
+button[aria-label*="webcam"],
+button[aria-label*="Webcam"],
+button[aria-label*="paste"],
+button[aria-label*="Paste"],
+svg[data-testid*="upload"] + button,
+svg[data-testid*="webcam"] + button,
+svg[data-testid*="paste"] + button {
+    background: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border-color: #b8a896 !important;
+}
+
+button:hover[aria-label*="upload"],
+button:hover[aria-label*="Upload"],
+button:hover[aria-label*="webcam"],
+button:hover[aria-label*="Webcam"],
+button:hover[aria-label*="paste"],
+button:hover[aria-label*="Paste"] {
+    background: #c4b4a0 !important;
+}
+
+/* Override any SVG icons in upload area */
+.image-upload-area svg,
+[data-testid*="upload"] svg,
+[data-testid*="webcam"] svg,
+[data-testid*="paste"] svg {
+    fill: #8b7355 !important;
+    color: #8b7355 !important;
+    stroke: #8b7355 !important;
+}
+
+/* Override Gradio's image component buttons */
+div[class*="image"] button,
+div[class*="Image"] button,
+div[data-testid*="image"] button {
+    background: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border-color: #b8a896 !important;
+}
+
+div[class*="image"] button:hover,
+div[class*="Image"] button:hover,
+div[data-testid*="image"] button:hover {
+    background: #c4b4a0 !important;
+}
+
+/* Target specific upload action buttons at bottom of image upload area */
+.image-container button,
+.image-upload-wrapper button,
+[class*="upload"] button:not(.primary):not([variant="primary"]),
+[class*="Upload"] button:not(.primary):not([variant="primary"]) {
+    background: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border: 1px solid #b8a896 !important;
+}
+
+.image-container button:hover,
+.image-upload-wrapper button:hover,
+[class*="upload"] button:hover:not(.primary):not([variant="primary"]),
+[class*="Upload"] button:hover:not(.primary):not([variant="primary"]) {
+    background: #c4b4a0 !important;
+}
+
+/* More aggressive override for any orange buttons in image area */
+div[class*="image"] * button[style*="orange"],
+div[class*="image"] * button[style*="#ff"],
+div[class*="image"] * button[style*="#FF"],
+div[class*="Image"] * button[style*="orange"],
+div[class*="Image"] * button[style*="#ff"],
+div[class*="Image"] * button[style*="#FF"] {
+    background: #d4c4b0 !important;
+    background-color: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border-color: #b8a896 !important;
+}
+
+/* Override all buttons in Gradio image component - catch-all */
+.gradio-image-container button,
+[data-testid="image"] button,
+[data-testid="image"] [role="button"],
+button[class*="upload"],
+button[class*="Upload"],
+button[class*="webcam"],
+button[class*="Webcam"],
+button[class*="paste"],
+button[class*="Paste"] {
+    background: #d4c4b0 !important;
+    background-color: #d4c4b0 !important;
+    color: #2d2d2d !important;
+    border-color: #b8a896 !important;
+    fill: #8b7355 !important;
+}
+
+button[class*="upload"]:hover,
+button[class*="Upload"]:hover,
+button[class*="webcam"]:hover,
+button[class*="Webcam"]:hover,
+button[class*="paste"]:hover,
+button[class*="Paste"]:hover {
+    background: #c4b4a0 !important;
+    background-color: #c4b4a0 !important;
+}
+

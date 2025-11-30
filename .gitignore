@@ -47,7 +47,7 @@ uv.lock
 *.ipynb_checkpoints/
 
 # Data files
-data/
+data/ 
 data/processed/*
 data/recipes/*
 data/fridge_photos/*

@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+dist/
+build/
+*.egg
+.venv
+venv/
+env/
+ENV/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+logs/*
+*.log
+
+# Data (will be mounted as volume)
+data/raw/*
+data/processed/*
+data/recipes/*
+data/fridge_photos/*
+!data/canonical_vocab.json
+!data/normalized_recipes.pkl
+!data/cached_normalized.csv
+!data/recipes/recipe_dataset_final_clean.csv
+!data/recipes/recipe_dataset_raw.csv
+
+# Models (will be mounted as volume)
+models/yolo/*
+models/embeddings/*
+models/checkpoints/*
+!models/yolo/yolov8n.pt
+
+# Results
+results/*
+runs/*
+
+# Environment
+.env
+.env.local
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Other
+.cache
+*.tmp
+*.bak
+
