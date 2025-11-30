@@ -137,4 +137,3 @@ docker-compose.override.yml
 *.swp
 .sass-cache
 node_modules/
-

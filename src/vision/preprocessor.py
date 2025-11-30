@@ -3,22 +3,15 @@ Image preprocessing and ingredient name normalization.
 Simplified version for compatibility with app/main.py
 """
 
+import json
+import os
+from rapidfuzz import process, fuzz
 import logging
 from pathlib import Path
 from typing import List, Dict, Union, Tuple
 import numpy as np
 from PIL import Image
 import cv2
-
-# Try to import fuzzywuzzy, fallback to simple matching if not available
-try:
-    from fuzzywuzzy import fuzz, process
-
-    HAS_FUZZYWUZZY = True
-except ImportError:
-    HAS_FUZZYWUZZY = False
-    logger = logging.getLogger(__name__)
-    logger.warning("fuzzywuzzy not installed. Using simple string matching instead.")
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +31,7 @@ class ImagePreprocessor:
         self,
         target_size: Tuple[int, int] = (640, 640),
         normalization_method: str = "fuzzy",
-        fuzzy_threshold: int = 85,
+        fuzzy_threshold: int = 75,
     ):
         """
         Initialize the preprocessor.
@@ -52,64 +45,45 @@ class ImagePreprocessor:
         self.normalization_method = normalization_method
         self.fuzzy_threshold = fuzzy_threshold
 
-        # Ingredient vocabulary (will be loaded from file or database)
+        # Load unified canonical ingredient vocabulary
         self.ingredient_vocab = self._load_ingredient_vocabulary()
 
         logger.info("ImagePreprocessor initialized")
 
-    def _load_ingredient_vocabulary(self) -> List[str]:
+    # ------------------------------------------------------------
+    # Load canonical vocabulary
+    # ------------------------------------------------------------
+    def _load_ingredient_vocabulary(self):
         """
-        Load ingredient vocabulary for normalization.
+        Load canonical ingredient vocabulary stored in:
+        project_root/data/canonical_vocab.json
 
         Returns:
-            List of standardized ingredient names
+            List of normalized ingredient tokens
         """
-        # Placeholder vocabulary - can be expanded
-        vocab = [
-            "milk",
-            "eggs",
-            "cheese",
-            "butter",
-            "yogurt",
-            "chicken",
-            "beef",
-            "pork",
-            "fish",
-            "tofu",
-            "tomato",
-            "lettuce",
-            "carrot",
-            "onion",
-            "garlic",
-            "apple",
-            "banana",
-            "orange",
-            "strawberry",
-            "grape",
-            "bread",
-            "rice",
-            "pasta",
-            "flour",
-            "sugar",
-            "blueberries",
-            "corn",
-            "chocolate",
-            "goat_cheese",
-            "green_beans",
-            "ground_beef",
-            "ham",
-            "heavy_cream",
-            "lime",
-            "mushrooms",
-            "potato",
-            "shrimp",
-            "spinach",
-            "sweet_potato",
-            "chicken_breast",
-        ]
+        vocab_path = os.path.join(
+            os.path.dirname(__file__),
+            "..", "..", "data", "canonical_vocab.json"
+        )
+
+        vocab_path = os.path.abspath(vocab_path)
+
+        if not os.path.exists(vocab_path):
+            raise FileNotFoundError(
+                f"canonical_vocab.json not found at {vocab_path}"
+            )
+
+        with open(vocab_path, "r", encoding="utf-8") as f:
+            vocab = json.load(f)
+
+        # clean + standardize
+        vocab = [v.lower().strip() for v in vocab if isinstance(v, str)]
 
         return vocab
 
+    # ------------------------------------------------------------
+    # Image handling
+    # ------------------------------------------------------------
     def load_image(
         self,
         image_source: Union[str, Path, Image.Image, np.ndarray],
@@ -151,135 +125,103 @@ class ImagePreprocessor:
         Returns:
             Preprocessed image as numpy array
         """
-        # Load image
         img = self.load_image(image)
 
-        # Resize if needed
         if resize:
             img = img.resize(self.target_size, Image.LANCZOS)
 
-        # Convert to numpy array
         img_array = np.array(img)
 
-        # Normalize if needed
         if normalize:
             img_array = img_array.astype(np.float32) / 255.0
 
         return img_array
 
+    # ------------------------------------------------------------
+    # Ingredient normalization
+    # ------------------------------------------------------------
     def normalize_ingredient_names(
         self,
         ingredients: List[str],
     ) -> List[str]:
         """
-        Normalize ingredient names using fuzzy matching.
+        Normalize ingredient names using fuzzy matching into canonical vocab.
 
         Args:
             ingredients: List of raw ingredient names from detection
 
         Returns:
-            List of normalized ingredient names
+            List of normalized ingredient names belonging ONLY to canonical vocab
         """
         normalized = []
 
         for ingredient in ingredients:
-            if self.normalization_method == "fuzzy" and HAS_FUZZYWUZZY:
-                # Fuzzy match against vocabulary
+            if ingredient is None or not isinstance(ingredient, str):
+                continue
+
+            raw = ingredient.lower().strip()
+            if not raw:
+                continue
+
+            # fuzzy normalization
+            if self.normalization_method == "fuzzy":
                 match, score = process.extractOne(
-                    ingredient.lower(),
+                    raw,
                     self.ingredient_vocab,
                     scorer=fuzz.ratio,
                 )
 
-                if score >= self.fuzzy_threshold:
+                # accept only if confident match
+                if match is not None and score >= self.fuzzy_threshold:
                     normalized.append(match)
-                else:
-                    # Keep original if no good match found
-                    normalized.append(ingredient.lower())
+                # else: skip low-confidence noise
 
-            elif self.normalization_method == "fuzzy" and not HAS_FUZZYWUZZY:
-                # Fallback to simple substring matching
-                ingredient_lower = ingredient.lower()
-                best_match = None
-                best_score = 0
-
-                for vocab_item in self.ingredient_vocab:
-                    # Simple substring matching
-                    if vocab_item in ingredient_lower or ingredient_lower in vocab_item:
-                        score = min(len(vocab_item), len(ingredient_lower)) / max(
-                            len(vocab_item), len(ingredient_lower)
-                        )
-                        if score > best_score:
-                            best_score = score
-                            best_match = vocab_item
-
-                if best_match and best_score > 0.5:  # 50% similarity threshold
-                    normalized.append(best_match)
-                else:
-                    normalized.append(ingredient_lower)
-
+            # exact matching mode
             elif self.normalization_method == "exact":
-                # Exact matching
-                ingredient_lower = ingredient.lower()
-                if ingredient_lower in self.ingredient_vocab:
-                    normalized.append(ingredient_lower)
-                else:
-                    normalized.append(ingredient_lower)
+                raw = raw.lower()
+                if raw in self.ingredient_vocab:
+                    normalized.append(raw)
+                # else skip
 
+            # fallback
             else:
-                # No normalization
-                normalized.append(ingredient.lower())
+                continue
 
         return normalized
 
+    # ------------------------------------------------------------
+    # Deduplication
+    # ------------------------------------------------------------
     def remove_duplicates(
         self,
         detections: Dict,
-        threshold: float = 0.9,
     ) -> Dict:
         """
-        Remove duplicate ingredient detections.
-
-        Args:
-            detections: Detection results with ingredients and confidences
-            threshold: Similarity threshold for considering duplicates
-
-        Returns:
-            Deduplicated detection results
+        Remove duplicate ingredient detections by keeping highest confidence.
         """
         ingredients = detections.get("ingredients", [])
         confidences = detections.get("confidences", [])
 
-        # Simple deduplication by name
         seen = {}
-        unique_ingredients = []
-        unique_confidences = []
-
         for ing, conf in zip(ingredients, confidences):
             if ing not in seen or conf > seen[ing]:
                 seen[ing] = conf
 
-        for ing, conf in seen.items():
-            unique_ingredients.append(ing)
-            unique_confidences.append(conf)
+        dedup_ing = list(seen.keys())
+        dedup_conf = list(seen.values())
 
-        detections["ingredients"] = unique_ingredients
-        detections["confidences"] = unique_confidences
+        return {"ingredients": dedup_ing, "confidences": dedup_conf}
 
-        return detections
-
+    # ------------------------------------------------------------
+    # Aggregation from multiple images
+    # ------------------------------------------------------------
     def aggregate_ingredients(
         self,
         batch_detections: List[Dict],
     ) -> Dict:
         """
-        Aggregate ingredients from multiple images.
-
-        Args:
-            batch_detections: List of detection results from multiple images
-
-        Returns:
-            Aggregated detection results
+        Aggregate ingredient detections from multiple images
+        and deduplicate.
         """
         all_ingredients = []
         all_confidences = []
@@ -288,35 +230,26 @@ class ImagePreprocessor:
             all_ingredients.extend(detection.get("ingredients", []))
             all_confidences.extend(detection.get("confidences", []))
 
-        # Create aggregated result
         aggregated = {
             "ingredients": all_ingredients,
             "confidences": all_confidences,
         }
 
-        # Remove duplicates
-        aggregated = self.remove_duplicates(aggregated)
+        return self.remove_duplicates(aggregated)
 
-        return aggregated
-
+    # ------------------------------------------------------------
+    # Filtering
+    # ------------------------------------------------------------
     def apply_filters(
         self,
         ingredients: List[str],
         blacklist: List[str] = None,
     ) -> List[str]:
         """
-        Apply filtering to ingredient list.
-
-        Args:
-            ingredients: List of ingredient names
-            blacklist: List of ingredients to exclude
-
-        Returns:
-            Filtered ingredient list
+        Apply blacklist filtering to ingredient list.
         """
         if blacklist is None:
             blacklist = []
 
-        filtered = [ing for ing in ingredients if ing.lower() not in blacklist]
-
-        return filtered
+        blacklist = {b.lower().strip() for b in blacklist}
+        return [ing for ing in ingredients if ing.lower() not in blacklist]
