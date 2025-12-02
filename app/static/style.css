@@ -7,7 +7,7 @@
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #f5f1eb;
+    background: #f5f1eb; 
 }
 
 /* Override Gradio's default container constraints */

@@ -267,7 +267,7 @@ See `data/README.md` for download instructions.
 - Docker containerization with Dockerfile and docker-compose.yml
 - FastAPI REST API with `/detect`, `/recommend`, `/health` endpoints
 - Health checks and logging
-- Documentation (README, DOCKER.md)
+- Documentation (README, DOCKER.md) 
 
 ## Technical Highlights
 
