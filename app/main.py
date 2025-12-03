@@ -731,7 +731,7 @@ class SmartPantryApp:
         self,
         share: bool = False,
         server_name: str = "0.0.0.0",
-        server_port: int = 7860,
+        server_port: Optional[int] = None,
     ):
         """
         Launch the Gradio application.
@@ -739,8 +739,14 @@ class SmartPantryApp:
         Args:
             share: Whether to create a public link
             server_name: Server hostname
-            server_port: Server port
+            server_port: Server port (if None, reads from GRADIO_SERVER_PORT env var or defaults to 7860)
         """
+        import os
+        
+        # Read port from environment variable if not provided
+        if server_port is None:
+            server_port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+        
         interface = self.create_interface()
         
         logger.info(f"Launching Gradio interface on {server_name}:{server_port}")
@@ -755,12 +761,24 @@ class SmartPantryApp:
 
 def main():
     """Main entry point for the application."""
+    import os
+    
     # Create logs directory
     Path("logs").mkdir(exist_ok=True)
     
     # Initialize and launch app
     app = SmartPantryApp()
-    app.launch()
+    
+    # Check if share should be enabled via environment variable
+    share = os.getenv("GRADIO_SHARE", "false").lower() == "true"
+    
+    # Read port from environment variable if set
+    server_port = None
+    if "GRADIO_SERVER_PORT" in os.environ:
+        server_port = int(os.getenv("GRADIO_SERVER_PORT"))
+    
+    # Launch with optional port override
+    app.launch(share=share, server_port=server_port)
 
 
 if __name__ == "__main__":
