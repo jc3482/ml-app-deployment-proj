@@ -95,27 +95,60 @@ ml-app-deployment-proj/
 
 ### Setup
 
+**Option 1: Using Docker (Recommended)**
 ```bash
 # Clone repository
 git clone <repo-url>
 cd ml-app-deployment-proj
 
-# Install dependencies (uses uv for speed)
-./setup.sh
+# Build and start container
+docker-compose up -d --build
 
-# Or manual setup
-pip install -e ".[dev]"
+# View logs
+docker-compose logs -f smartpantry
+```
+
+**Option 2: Using Python Virtual Environment**
+```bash
+# Clone repository
+git clone <repo-url>
+cd ml-app-deployment-proj
+
+# Create virtual environment (using uv or standard Python)
+uv venv
+# OR: python -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate  # Mac/Linux
+# OR: .venv\Scripts\activate  # Windows
+
+# Install dependencies
+./setup.sh
+# OR: pip install -r requirements.txt
 ```
 
 ### Run the App
 
-**Option 1: Direct Python (Development)**
+**Option 1: Docker (Recommended)**
 ```bash
-# Activate environment
+# Start container
+docker-compose up -d
+
+# Stop container
+docker-compose down
+
+# Access at http://localhost:7860
+```
+
+**Option 2: Direct Python**
+```bash
+# Activate virtual environment (if not already activated)
 source .venv/bin/activate
 
 # Run Gradio interface
 python -m app.main
+
+# Access at http://localhost:7860
 ```
 
 **Option 2: Docker (Recommended for Deployment)**
