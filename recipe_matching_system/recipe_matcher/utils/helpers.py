@@ -16,6 +16,7 @@ NORMALIZED_JSON_PATH = DATA_DIR / "normalized_recipes.json"
 NORMALIZED_CSV_PATH = DATA_DIR / "normalized_recipes.csv"
 ONTOLOGY_JSON_PATH = DATA_DIR / "ontology_recipes.json"
 ONTOLOGY_CSV_PATH = DATA_DIR / "ontology_recipes.csv"
+ONTOLOGY_PKL_PATH = DATA_DIR / "ontology_recipes.pkl"
 
 
 # =============================================================================
@@ -173,7 +174,7 @@ def save_normalized_recipes(df, save_json=True, save_csv=True):
     return saved_files
 
 
-def save_ontology_recipes(df, save_json=True, save_csv=True):
+def save_ontology_recipes(df, save_json=True, save_csv=True, save_pkl=True):
     """
     Save ontology-processed recipe dataset.
     
@@ -181,6 +182,7 @@ def save_ontology_recipes(df, save_json=True, save_csv=True):
         df: DataFrame with ontology_ingredients column
         save_json: Save JSON format
         save_csv: Save CSV format
+        save_pkl: Save Pickle format
     
     Returns:
         Dict with paths to saved files
@@ -197,6 +199,11 @@ def save_ontology_recipes(df, save_json=True, save_csv=True):
         df.to_csv(ONTOLOGY_CSV_PATH, index=False)
         saved_files['csv'] = str(ONTOLOGY_CSV_PATH)
         print(f"Saved: {ONTOLOGY_CSV_PATH}")
+
+    if save_pkl:
+        df.to_pickle(ONTOLOGY_PKL_PATH)
+        saved_files['pkl'] = str(ONTOLOGY_PKL_PATH)
+        print(f"Saved: {ONTOLOGY_PKL_PATH}")
     
     return saved_files
 

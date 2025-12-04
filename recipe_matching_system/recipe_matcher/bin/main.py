@@ -64,6 +64,11 @@ def main():
         '--no-csv', action='store_true',
         help='Skip CSV output'
     )
+    # add toggle for .pkl output (cached_ontology.pkl)
+    ontology_parser.add_argument(
+        '--no-pkl', action='store_true',
+        help='Skip PKL output (cached_ontology.pkl)'
+    )
     
     # =========================================================================
     # Command 3: match
@@ -110,7 +115,8 @@ def main():
         apply_ontology_processing(
             input_path=args.input,
             output_json=not args.no_json,
-            output_csv=not args.no_csv
+            output_csv=not args.no_csv,
+            output_pkl=not args.no_pkl
         )
     
     elif args.command == 'match':

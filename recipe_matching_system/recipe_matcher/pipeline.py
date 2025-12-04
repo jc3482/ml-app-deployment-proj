@@ -2,7 +2,7 @@
 RecipePipeline
 Data processing and matching pipeline:
 1. Raw CSV → preprocess.py (normalize) → normalized_recipes.json
-2. normalized_recipes.json → preprocess.py (ontology) → ontology_recipes.json (optional)
+2. normalized_recipes.json → preprocess.py (ontology) → ontology_recipes.json 
 3. Load processed data → retrieval_engine.py (retrieve & rank) → ranked results
 """
 
@@ -98,7 +98,7 @@ def normalize_recipe_dataset(input_path=None, output_json=True, output_csv=True)
 # Step 2: Apply Ontology Processing (Optional)
 # =============================================================================
 
-def apply_ontology_processing(input_path=None, output_json=True, output_csv=True):
+def apply_ontology_processing(input_path=None, output_json=True, output_csv=True, output_pkl=True):
     """
     Apply ontology processing to normalized dataset.
     
@@ -109,6 +109,7 @@ def apply_ontology_processing(input_path=None, output_json=True, output_csv=True
         input_path: Path to normalized recipes (optional)
         output_json: Save JSON format
         output_csv: Save CSV format
+        output_pkl: Save PKL format
     
     Returns:
         DataFrame with ontology_ingredients column
@@ -137,7 +138,7 @@ def apply_ontology_processing(input_path=None, output_json=True, output_csv=True
     
     # Save
     print("\nSaving ontology-processed dataset...")
-    save_ontology_recipes(df, save_json=output_json, save_csv=output_csv)
+    save_ontology_recipes(df, save_json=output_json, save_csv=output_csv, save_pkl=output_pkl)
     
     print("\n" + "="*70)
     print("Ontology Processing Complete")
