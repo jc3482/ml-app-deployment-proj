@@ -52,141 +52,152 @@ Many people struggle with meal planning and food waste. Our solution helps by:
 - Persistent Storage: History and pantry data saved to JSON files
 
 **UI/UX:**
+- Modern React single-page application
 - Elegant beige/tan color scheme with serif fonts
 - Collapsible sections for better organization
 - Responsive layout with full-width design
 - Interactive recipe cards with expandable instructions
+- Individual ingredient deletion with × buttons
 
 ### 4. Deployment
 
-- Docker: Fully containerized application with Docker Compose
-- FastAPI REST API: RESTful endpoints for programmatic access
-- Gradio Web Interface: User-friendly web UI
-- Health Checks: Docker health check integration
+- **React Frontend**: Modern single-page application with Vite
+- **FastAPI Backend**: RESTful API with comprehensive endpoints
+- **Docker**: Fully containerized application (frontend + backend in one container)
+- **Hugging Face Spaces**: Deployed and accessible via public URL
+- **Health Checks**: Docker health check integration
 
 ## Project Structure
 
 ```
 ml-app-deployment-proj/
 ├── app/                           # Application code
-│   ├── main.py                    # Gradio web interface
-│   ├── api.py                     # FastAPI REST API
-│   └── static/
-│       └── style.css              # Custom UI styling
+│   └── api_extended.py            # FastAPI REST API (with frontend serving)
+├── frontend/                      # React frontend
+│   ├── src/                       # React source code
+│   │   ├── components/            # React components
+│   │   ├── services/              # API client
+│   │   └── App.jsx                # Main app
+│   ├── package.json               # Frontend dependencies
+│   └── vite.config.js             # Vite configuration
 ├── src/
 │   ├── backend/
 │   │   └── recipe_recommender.py  # Unified ML pipeline
 │   ├── vision/                    # YOLOv8 detection
-│   ├── recipes/                     # Recipe matching
+│   ├── recipes/                   # Recipe matching
 │   └── utils/                     # Utility functions
 ├── data/
 │   ├── canonical_vocab.json       # Ingredient normalization
-│   ├── recipes/                   # Recipe dataset
+│   ├── normalized_recipes.pkl     # Processed recipe cache
 │   ├── history/                   # User data (history, pantry)
 │   └── fridge_photos/             # Training images
 ├── models/
 │   └── yolo/                      # YOLOv8 model weights
-├── notebooks/                     # Jupyter notebooks
-├── tests/                         # Unit tests
+├── recipe_matching_system/        # Advanced matching system
 ├── Dockerfile                     # Docker configuration
 ├── docker-compose.yml             # Docker Compose config
-└── config.yaml                    # Configuration
+└── requirements.txt               # Python dependencies
 ```
 
 ## Quick Start
 
-### Setup
+### Local Development
 
-**Option 1: Using Docker (Recommended)**
+**Prerequisites:**
+- Python 3.10+
+- Node.js 18+
+- npm or yarn
+
+**Step 1: Install Backend Dependencies**
 ```bash
 # Clone repository
 git clone <repo-url>
 cd ml-app-deployment-proj
 
-# Build and start container
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f smartpantry
-```
-
-**Option 2: Using Python Virtual Environment**
-```bash
-# Clone repository
-git clone <repo-url>
-cd ml-app-deployment-proj
-
-# Create virtual environment (using uv or standard Python)
-uv venv
-# OR: python -m venv .venv
-
-# Activate virtual environment
+# Create virtual environment
+python -m venv .venv
 source .venv/bin/activate  # Mac/Linux
 # OR: .venv\Scripts\activate  # Windows
 
-# Install dependencies
-./setup.sh
-# OR: pip install -r requirements.txt
+# Install Python dependencies
+pip install -r requirements.txt
 ```
 
-### Run the App
-
-**Option 1: Docker (Recommended)**
+**Step 2: Install Frontend Dependencies**
 ```bash
-# Start container
-docker-compose up -d
-
-# Stop container
-docker-compose down
-
-# Access at http://localhost:7860
+cd frontend
+npm install
+cd ..
 ```
 
-**Option 2: Direct Python**
+**Step 3: Run the Application**
+
+Terminal 1 - Start FastAPI Backend:
 ```bash
-# Activate virtual environment (if not already activated)
-source .venv/bin/activate
-
-# Run Gradio interface
-python -m app.main
-
-# Access at http://localhost:7860
+uvicorn app.api_extended:app --reload --port 8001
 ```
 
-**Option 2: Docker (Recommended for Deployment)**
+Terminal 2 - Start React Frontend:
 ```bash
-# Build and start container
+cd frontend
+npm run dev
+```
+
+Access the application at `http://localhost:3000`
+
+### Docker Deployment
+
+**Build and Run:**
+```bash
+# Build Docker image
+docker build -t smartpantry:latest .
+
+# Run container
+docker run -p 8001:8001 \
+  -v $(PWD)/data:/app/data \
+  -v $(PWD)/models:/app/models \
+  smartpantry:latest
+
+# Or use Docker Compose
 docker-compose up -d --build
-
-# View logs
-docker-compose logs -f smartpantry
-
-# Stop container
-docker-compose down
 ```
 
-Access at `http://localhost:7860`
+Access at `http://localhost:8001`
 
-For detailed Docker deployment instructions, see [DOCKER.md](DOCKER.md)
+### Hugging Face Spaces Deployment
+
+See [DEPLOY_TO_HF.md](DEPLOY_TO_HF.md) for detailed instructions.
+
+**Quick Steps:**
+1. Create a Space on Hugging Face (SDK: Docker)
+2. Add remote: `git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
+3. Push: `git push hf main`
+4. Wait for build (5-15 minutes)
+5. Access at `https://YOUR_USERNAME-smartpantry.hf.space`
 
 ### API Access
 
-The application also provides a REST API via FastAPI:
+The application provides a REST API via FastAPI:
 
 ```bash
-# Start API server (if not using Docker)
-uvicorn app.api:app --host 0.0.0.0 --port 8000
+# Start API server
+uvicorn app.api_extended:app --host 0.0.0.0 --port 8001
 
 # Access API documentation
-# Swagger UI: http://localhost:8000/docs
-# ReDoc: http://localhost:8000/redoc
+# Swagger UI: http://localhost:8001/docs
+# ReDoc: http://localhost:8001/redoc
 ```
 
 **Available Endpoints:**
 - `GET /` - Root endpoint
 - `GET /health` - Health check
-- `POST /detect` - Detect ingredients from image
-- `POST /recommend` - Get recipe recommendations
+- `POST /api/detect` - Detect ingredients from image
+- `POST /api/recommend` - Get recipe recommendations
+- `GET /api/pantry/list` - Get pantry list
+- `POST /api/pantry/add` - Add ingredients to pantry
+- `DELETE /api/pantry/remove/{ingredient}` - Remove ingredient
+- `GET /api/history` - Get history
+- `POST /api/history/clear` - Clear history
 
 ## Features
 
@@ -288,21 +299,24 @@ See `data/README.md` for download instructions.
 ### Phase 3: Integration & UI (Completed)
 
 - Unified RecipeRecommender pipeline connecting detection and retrieval
-- Complete Gradio web interface with:
+- React frontend with modern UI:
   - Image upload and ingredient detection
   - Recipe recommendations with detailed information
   - Pantry List for manual ingredient input
   - Dietary filters (vegan, vegetarian, dairy-free, gluten-free)
   - History tracking and management
+  - Individual ingredient deletion
 - Elegant UI design with beige/tan theme
 - End-to-end testing completed
 
 ### Phase 4: Deployment (Completed)
 
 - Docker containerization with Dockerfile and docker-compose.yml
-- FastAPI REST API with `/detect`, `/recommend`, `/health` endpoints
+- FastAPI REST API with comprehensive endpoints (`/api/*`)
+- Frontend and backend in single Docker container
+- Hugging Face Spaces deployment
 - Health checks and logging
-- Documentation (README, DOCKER.md) 
+- Documentation (README, DEPLOY_TO_HF.md) 
 
 ## Technical Highlights
 
@@ -315,9 +329,10 @@ See `data/README.md` for download instructions.
 - Recipe Recommender Pipeline: Unified ML pipeline integrating detection and retrieval 
 
 **Application Features:**
-- Gradio Web Interface: Beautiful, interactive web UI
-- FastAPI REST API: Programmatic access via REST endpoints
-- Docker Deployment: Containerized application for easy deployment
+- React Frontend: Modern, responsive single-page application
+- FastAPI REST API: Comprehensive REST endpoints with `/api` prefix
+- Docker Deployment: Containerized application (frontend + backend)
+- Hugging Face Spaces: Public deployment with automatic scaling
 - Persistent Storage: JSON-based storage for user history and pantry lists
 - Dietary Filtering: Support for multiple dietary restrictions
 
@@ -330,7 +345,8 @@ See `data/README.md` for download instructions.
 
 ```bash
 # Development
-make run              # Start app
+make run              # Start FastAPI backend (port 8001)
+make test-api         # Test API endpoints
 make test             # Run tests
 make format           # Format code
 make lint             # Check code quality
@@ -338,6 +354,11 @@ make lint             # Check code quality
 # Docker
 make docker-build     # Build image
 make docker-run       # Run container
+
+# Frontend (separate terminal)
+cd frontend
+npm run dev           # Start React dev server (port 3000)
+npm run build         # Build for production
 
 # Training
 jupyter notebook      # Open notebooks
@@ -354,8 +375,8 @@ Sample datasets are in Git for team testing and CI/CD.
 ## Questions or Issues
 
 - Check `data/README.md` for dataset setup
-- Check `CONTRIBUTING.md` for development guidelines
-- Check `DOCKER.md` for deployment instructions
+- Check `DEPLOY_TO_HF.md` for Hugging Face deployment instructions
+- Check `frontend/README.md` for frontend development
 - Open an issue for bugs or questions
 
 ## Course Context
