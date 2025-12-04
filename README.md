@@ -277,7 +277,7 @@ See `data/README.md` for download instructions.
 - YOLOv8: Real-time object detection for ingredient recognition
 - Ingredient Overlap Scoring: Set-based matching algorithm for recipe ranking
 - Canonical Ingredient Normalization: Consistent ingredient matching across variations
-- Recipe Recommender Pipeline: Unified ML pipeline integrating detection and retrieval
+- Recipe Recommender Pipeline: Unified ML pipeline integrating detection and retrieval 
 
 **Application Features:**
 - Gradio Web Interface: Beautiful, interactive web UI
