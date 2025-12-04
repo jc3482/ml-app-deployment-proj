@@ -137,3 +137,6 @@ docker-compose.override.yml
 *.swp
 .sass-cache
 node_modules/
+
+# Samantha file
+DEPLOY_TO_HF.md

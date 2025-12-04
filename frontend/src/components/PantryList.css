@@ -1,0 +1,69 @@
+.pantry-input-group {
+  margin-bottom: 1em;
+}
+
+.pantry-details {
+  background: var(--white);
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  padding: 0;
+  margin-top: 1em;
+}
+
+.pantry-details summary {
+  padding: 1.5em;
+  cursor: pointer;
+  font-weight: 400;
+  color: var(--tan-text);
+  font-size: 1.1em;
+  letter-spacing: 0.02em;
+  list-style: none;
+  user-select: none;
+}
+
+.pantry-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.pantry-details summary::before {
+  content: '▶ ';
+  display: inline-block;
+  margin-right: 0.5em;
+  transition: transform 0.2s ease;
+  color: var(--tan-dark);
+}
+
+.pantry-details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.pantry-list {
+  list-style: none;
+  padding: 0 1.5em 1.5em 1.5em;
+  margin: 0;
+  border-top: 1px solid var(--beige-border);
+  margin-top: 0.5em;
+}
+
+.pantry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--beige-border);
+}
+
+.pantry-item:last-child {
+  border-bottom: none;
+}
+
+.pantry-item span {
+  color: var(--text-dark);
+  flex: 1;
+}
+
+.pantry-item .remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

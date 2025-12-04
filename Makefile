@@ -81,12 +81,16 @@ clean:
 	rm -f .coverage
 
 run:
-	@echo "🚀 Starting Gradio app..."
-	python app/main.py
+	@echo "🚀 Starting FastAPI backend..."
+	uvicorn app.api_extended:app --reload --port 8001
+
+test-api:
+	@echo "🧪 Testing API..."
+	python test_api.py
 
 run-dev:
-	@echo "🚀 Starting Gradio app in development mode..."
-	GRADIO_DEBUG=true python app/main.py
+	@echo "🚀 Starting FastAPI backend in development mode..."
+	uvicorn app.api_extended:app --reload --port 8001 --log-level debug
 
 docker-build:
 	@echo "🐳 Building Docker image..."
@@ -94,7 +98,7 @@ docker-build:
 
 docker-run:
 	@echo "🐳 Running Docker container..."
-	docker run -p 7860:7860 -v $(PWD)/data:/app/data -v $(PWD)/models:/app/models smartpantry:latest
+	docker run -p 8001:8001 -v $(PWD)/data:/app/data -v $(PWD)/models:/app/models smartpantry:latest
 
 docker-compose-up:
 	@echo "🐳 Starting with Docker Compose..."
@@ -110,10 +114,21 @@ docker-compose-logs:
 
 deploy-hf:
 	@echo "🤗 Preparing Hugging Face Spaces deployment..."
-	cp app/main.py app.py
-	@echo "✅ app.py created. Now push to HF Space:"
+	@echo "✅ Ready to deploy! Follow these steps:"
+	@echo ""
+	@echo "1. Create a Space on Hugging Face:"
+	@echo "   https://huggingface.co/spaces"
+	@echo "   - SDK: Docker"
+	@echo "   - Hardware: CPU basic (free) or GPU (paid)"
+	@echo ""
+	@echo "2. Add HF remote and push:"
+	@echo "   huggingface-cli login"
 	@echo "   git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/smartpantry"
 	@echo "   git push hf main"
+	@echo ""
+	@echo "3. Wait for build (5-10 minutes)"
+	@echo "4. Access your Space at:"
+	@echo "   https://huggingface.co/spaces/YOUR_USERNAME/smartpantry"
 
 download-models:
 	@echo "📥 Downloading YOLOv8 models..."

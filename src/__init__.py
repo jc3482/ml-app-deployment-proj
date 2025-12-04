@@ -8,11 +8,32 @@ __author__ = "SmartPantry Team"
 
 # Import commonly used classes (using lazy imports to avoid dependency issues)
 # These can be imported directly from submodules if needed
-from src.vision.detector import IngredientDetector
-from src.vision.preprocessor import ImagePreprocessor
-from src.nlp.embedder import IngredientEmbedder
-from src.nlp.retriever import RecipeRetriever
-from src.utils.helpers import load_config, setup_logging
+# Use try-except to make imports optional (for API-only deployments)
+try:
+    from src.vision.detector import IngredientDetector
+except ImportError:
+    IngredientDetector = None
+
+try:
+    from src.vision.preprocessor import ImagePreprocessor
+except ImportError:
+    ImagePreprocessor = None
+
+try:
+    from src.nlp.embedder import IngredientEmbedder
+except ImportError:
+    IngredientEmbedder = None
+
+try:
+    from src.nlp.retriever import RecipeRetriever
+except ImportError:
+    RecipeRetriever = None
+
+try:
+    from src.utils.helpers import load_config, setup_logging
+except ImportError:
+    load_config = None
+    setup_logging = None
 
 __all__ = [
     "IngredientDetector",

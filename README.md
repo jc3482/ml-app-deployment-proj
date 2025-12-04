@@ -1,3 +1,15 @@
+---
+title: SmartPantry
+emoji: 🥗
+colorFrom: beige
+colorTo: tan
+sdk: docker
+sdk_version: latest
+app_file: Dockerfile
+pinned: false
+license: mit
+---
+
 # SmartPantry: Recipes from Your Fridge Cam
 
 **Course Project**: Machine Learning Application Deployment
@@ -279,9 +291,9 @@ See `data/README.md` for download instructions.
 ### Phase 2: Recipe Retrieval (Completed)
 
 - Implemented ingredient overlap-based recipe matching
-- Set-based scoring algorithm
+- Set-based scoring algorithm with percentage-based ranking (0-100%)
 - Supports 13,244+ recipes
-- Ingredient overlap ranking
+- Match score represents percentage of recipe ingredients that match user's available ingredients
 
 ### Phase 3: Integration & UI (Completed)
 
@@ -308,7 +320,7 @@ See `data/README.md` for download instructions.
 
 **Core Technologies:**
 - YOLOv8: Real-time object detection for ingredient recognition
-- Ingredient Overlap Scoring: Set-based matching algorithm for recipe ranking
+- Ingredient Overlap Scoring: Set-based matching algorithm with percentage-based ranking (0-100%)
 - Canonical Ingredient Normalization: Consistent ingredient matching across variations
 - Recipe Recommender Pipeline: Unified ML pipeline integrating detection and retrieval 
 

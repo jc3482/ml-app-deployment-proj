@@ -2,11 +2,32 @@
 Custom object detection module for ingredient detection.
 """
 
-from .detector import CustomDetector, IngredientDetector
-from .preprocessor import ImagePreprocessor
-from .dataset import YOLODataset
-from .loss import DetectionLoss
-from .utils import visualize_detections
+# Optional imports to avoid dependency issues (for API-only deployments)
+try:
+    from .detector import CustomDetector, IngredientDetector
+except ImportError:
+    CustomDetector = None
+    IngredientDetector = None
+
+try:
+    from .preprocessor import ImagePreprocessor
+except ImportError:
+    ImagePreprocessor = None
+
+try:
+    from .dataset import YOLODataset
+except ImportError:
+    YOLODataset = None
+
+try:
+    from .loss import DetectionLoss
+except ImportError:
+    DetectionLoss = None
+
+try:
+    from .utils import visualize_detections
+except ImportError:
+    visualize_detections = None
 
 # Optional import for DetectionTrainer (requires tensorboard)
 # This allows the API to run without tensorboard dependency

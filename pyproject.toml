@@ -136,7 +136,7 @@ Repository = "https://github.com/smartpantry/smartpantry"
 Issues = "https://github.com/smartpantry/smartpantry/issues"
 
 [project.scripts]
-smartpantry = "app.main:main"
+smartpantry = "app.api_extended:main"
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]

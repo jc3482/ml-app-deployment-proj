@@ -1,0 +1,80 @@
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1em;
+}
+
+.history-details {
+  flex: 1;
+  background: var(--white);
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  padding: 0;
+}
+
+.history-details summary {
+  padding: 1.5em;
+  cursor: pointer;
+  font-weight: 400;
+  color: var(--tan-text);
+  font-size: 1.1em;
+  letter-spacing: 0.02em;
+  list-style: none;
+  user-select: none;
+}
+
+.history-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-details summary::before {
+  content: '▶ ';
+  display: inline-block;
+  margin-right: 0.5em;
+  transition: transform 0.2s ease;
+  color: var(--tan-dark);
+}
+
+.history-details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.history-list {
+  padding: 0 1.5em 1.5em 1.5em;
+  border-top: 1px solid var(--beige-border);
+  margin-top: 0.5em;
+}
+
+.history-item {
+  border-bottom: 1px solid var(--beige-border);
+  padding: 1em 0;
+  margin-bottom: 1em;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.history-time {
+  margin: 0 0 0.5em 0;
+  color: var(--tan-dark);
+  font-size: 0.9em;
+}
+
+.history-ingredients {
+  margin: 0 0 0.5em 0;
+  color: var(--text-dark);
+}
+
+.history-ingredients strong {
+  color: var(--tan-text);
+}
+
+.history-top-recipe {
+  margin: 0;
+  color: var(--tan-text);
+  font-style: italic;
+}
+

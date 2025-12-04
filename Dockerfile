@@ -1,45 +1,50 @@
-# Dockerfile for SmartPantry
+# Dockerfile for SmartPantry (Hugging Face Spaces compatible)
+# Includes frontend build and static file serving
 
 FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (including Node.js for frontend build)
 RUN apt-get update && apt-get install -y \
     git \
-    wget \
     curl \
     libgl1 \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
     build-essential \
     gcc \
     g++ \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+# Install Node.js 18.x for frontend build
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy project configuration files first (for better Docker layer caching)
-COPY pyproject.toml .
+# Copy requirements first (for better Docker layer caching)
 COPY requirements.txt .
 
-# Install Python dependencies from requirements.txt
-RUN uv pip install --system -r requirements.txt || \
-    pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy frontend code and build it
+COPY frontend/ ./frontend/
+WORKDIR /app/frontend
+RUN npm install && npm run build
+WORKDIR /app
 
-# Install the package itself
-RUN uv pip install --system -e . || \
-    pip install --no-cache-dir -e .
+# Copy application code (selective copy for smaller image)
+COPY app/ ./app/
+COPY src/ ./src/
+COPY data/canonical_vocab.json ./data/
+COPY recipe_matching_system/ ./recipe_matching_system/ 2>/dev/null || true
+COPY pyproject.toml . 2>/dev/null || true
+
+# Copy data files if they exist (use Git LFS for large files)
+COPY data/normalized_recipes.pkl ./data/ 2>/dev/null || true
+COPY models/yolo/ ./models/yolo/ 2>/dev/null || true
 
 # Create necessary directories
 RUN mkdir -p logs \
@@ -51,18 +56,18 @@ RUN mkdir -p logs \
     models/embeddings \
     models/checkpoints
 
-# Expose Gradio port (default 7860)
-EXPOSE 7860
+# Expose port (HF Spaces will map this automatically)
+EXPOSE 8001
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV GRADIO_SERVER_NAME=0.0.0.0
-ENV GRADIO_SERVER_PORT=7860
+ENV PORT=8001
 
-# Health check - check if Gradio is running
+# Health check - check if FastAPI is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:7860/ || exit 1
+    CMD curl -f http://localhost:8001/health || exit 1
 
-# Run the Gradio application
-CMD ["python", "-m", "app.main"]
+# Run the FastAPI application
+# Use PORT environment variable (HF Spaces sets this)
+CMD uvicorn app.api_extended:app --host 0.0.0.0 --port ${PORT:-8001}
 

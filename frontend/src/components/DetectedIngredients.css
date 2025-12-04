@@ -1,0 +1,81 @@
+.ingredients-details {
+  background: var(--white);
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  padding: 0;
+}
+
+.ingredients-details summary {
+  padding: 1.5em;
+  cursor: pointer;
+  font-weight: 400;
+  color: var(--tan-text);
+  font-size: 1.1em;
+  letter-spacing: 0.02em;
+  list-style: none;
+  user-select: none;
+}
+
+.ingredients-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.ingredients-details summary::before {
+  content: '▶ ';
+  display: inline-block;
+  margin-right: 0.5em;
+  transition: transform 0.2s ease;
+  color: var(--tan-dark);
+}
+
+.ingredients-details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.ingredients-list {
+  list-style: none;
+  padding: 0 1.5em 1.5em 1.5em;
+  margin: 0;
+  border-top: 1px solid var(--beige-border);
+  margin-top: 0.5em;
+}
+
+.ingredient-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--beige-border);
+}
+
+.ingredient-item:last-child {
+  border-bottom: none;
+}
+
+.ingredient-item span {
+  color: var(--text-dark);
+  flex: 1;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--tan-dark);
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 0.5em;
+  margin-left: 1em;
+  transition: color 0.2s;
+  font-family: 'Georgia', serif;
+}
+
+.remove-btn:hover {
+  color: #c44;
+}
+
+.empty-message {
+  color: var(--tan-dark);
+  font-style: italic;
+  margin: 0;
+}
+
