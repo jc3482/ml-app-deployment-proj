@@ -83,7 +83,9 @@ def get_recommender():
     if _recommender is None:
         logger.info("Initializing RecipeRecommender...")
         _recommender = RecipeRecommender()
-        logger.info(f"RecipeRecommender initialized with {len(_recommender.recipe_dict)} recipes")
+        # RecipeRecommender now uses pipeline.recipes (DataFrame) instead of recipe_dict
+        recipe_count = len(_recommender.pipeline.recipes) if hasattr(_recommender, 'pipeline') else 0
+        logger.info(f"RecipeRecommender initialized with {recipe_count} recipes")
     return _recommender
 
 
@@ -129,9 +131,11 @@ async def root():
 async def health_check():
     try:
         recommender = get_recommender()
+        # RecipeRecommender now uses pipeline.recipes (DataFrame) instead of recipe_dict
+        recipe_count = len(recommender.pipeline.recipes) if hasattr(recommender, 'pipeline') else 0
         return {
             "status": "healthy",
-            "message": f"API is running. Loaded {len(recommender.recipe_dict)} recipes."
+            "message": f"API is running. Loaded {recipe_count} recipes."
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
@@ -157,7 +161,6 @@ async def detect_ingredients(file: UploadFile = File(...)):
         preprocessor = get_preprocessor()
         
         raw_labels = detector.detect(temp_file_path)
-        preprocessor = get_preprocessor()
         canonical = preprocessor.normalize_list(raw_labels)
         
         return {
@@ -329,7 +332,20 @@ async def recommend_recipes(
         
         # OPTION: We can call pipeline.run() directly since we have access to recommender.pipeline
         
+        # RecipeRecommender already initializes pipeline in __init__
+        # But we need to ensure it's available
+        if not hasattr(recommender, 'pipeline'):
+            from recipe_matching_system.recipe_matcher.pipeline import RecipePipeline
+            logger.info("Initializing RecipePipeline...")
+            recommender.pipeline = RecipePipeline(use_ontology=True)
+        
         pipeline = recommender.pipeline
+        
+        # Run the Retrieve & Rank pipeline
+        # Pipeline stages:
+        # 1. Normalize user ingredients
+        # 2. Retrieve: Fast candidate recall (top 300)
+        # 3. Rank: Precise scoring and sorting (top K)
         processed_ingredients, ranked_recipes = pipeline.run(all_ingredients, top_k=request_obj.top_k)
         
         # Format output
@@ -341,7 +357,7 @@ async def recommend_recipes(
             "gluten-free": ["flour", "bread", "pasta", "wheat"],
         }
         dietary_filter = request_obj.dietary_filter
-
+        
         for r in ranked_recipes:
             # Apply dietary filter
             if dietary_filter and dietary_filter != "None":
