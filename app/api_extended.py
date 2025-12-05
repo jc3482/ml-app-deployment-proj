@@ -21,7 +21,6 @@ import uvicorn
 
 # Lazy import
 from src.backend.recipe_recommender import RecipeRecommender
-from src.vision.yolo_detector.yolo_preprocessor import YoloPreprocessor
 from src.vision.yolo_detector.food_detector import FoodDetector
 
 logging.basicConfig(level=logging.INFO)
@@ -58,12 +57,13 @@ _history_file.parent.mkdir(parents=True, exist_ok=True)
 
 
 def get_preprocessor():
-    """Get or initialize YoloPreprocessor instance (lightweight, no cache needed)."""
+    """Get or initialize IngredientNormalizer instance."""
     global _preprocessor
     if _preprocessor is None:
-        logger.info("Initializing YoloPreprocessor...")
-        _preprocessor = YoloPreprocessor()
-        logger.info("YoloPreprocessor initialized")
+        logger.info("Initializing IngredientNormalizer...")
+        from recipe_matching_system.recipe_matcher.preprocess import IngredientNormalizer
+        _preprocessor = IngredientNormalizer()
+        logger.info("IngredientNormalizer initialized")
     return _preprocessor
 
 
@@ -83,7 +83,9 @@ def get_recommender():
     if _recommender is None:
         logger.info("Initializing RecipeRecommender...")
         _recommender = RecipeRecommender()
-        logger.info(f"RecipeRecommender initialized with {len(_recommender.recipe_dict)} recipes")
+        # RecipeRecommender now uses pipeline.recipes (DataFrame) instead of recipe_dict
+        recipe_count = len(_recommender.pipeline.recipes) if hasattr(_recommender, 'pipeline') else 0
+        logger.info(f"RecipeRecommender initialized with {recipe_count} recipes")
     return _recommender
 
 
@@ -129,9 +131,11 @@ async def root():
 async def health_check():
     try:
         recommender = get_recommender()
+        # RecipeRecommender now uses pipeline.recipes (DataFrame) instead of recipe_dict
+        recipe_count = len(recommender.pipeline.recipes) if hasattr(recommender, 'pipeline') else 0
         return {
             "status": "healthy",
-            "message": f"API is running. Loaded {len(recommender.recipe_dict)} recipes."
+            "message": f"API is running. Loaded {recipe_count} recipes."
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
@@ -157,7 +161,7 @@ async def detect_ingredients(file: UploadFile = File(...)):
         preprocessor = get_preprocessor()
         
         raw_labels = detector.detect(temp_file_path)
-        canonical = preprocessor.normalize(raw_labels)
+        canonical = preprocessor.normalize_list(raw_labels)
         
         return {
             "raw_detections": raw_labels,
@@ -183,8 +187,10 @@ async def add_to_pantry(request: PantryAddRequest):
         
         # Normalize and add ingredients
         for ing in request.ingredients:
-            normalized = preprocessor.normalize([ing.strip()])
-            pantry.extend(normalized)
+            # IngredientNormalizer.normalize_ingredient returns a single string
+            normalized = preprocessor.normalize_ingredient(ing.strip())
+            if normalized:
+                pantry.append(normalized)
         
         # Remove duplicates and save
         pantry = sorted(list(set(pantry)))
@@ -283,8 +289,11 @@ async def recommend_recipes(
                     tmp_file.write(content)
                 
                 raw_labels = recommender.detector.detect(temp_file_path)
-                canonical = recommender.preprocessor.normalize(raw_labels)
-                all_ingredients.extend(canonical)
+                # Preprocessing is now handled internally by the pipeline in recommend()
+                # But we still need to display 'canonical' ingredients for the API response if needed BEFORE pipeline runs
+                # Actually, the pipeline will return processed ingredients.
+                # We can just accumulate raw labels here.
+                all_ingredients.extend(raw_labels)
             finally:
                 if temp_file_path and os.path.exists(temp_file_path):
                     try:
@@ -310,46 +319,75 @@ async def recommend_recipes(
         if not all_ingredients:
             raise HTTPException(status_code=400, detail="No ingredients provided")
         
-        # Match recipes
-        scored_recipes = []
+        # Use the updated recommend() method which handles everything via the pipeline
+        # We pass a dummy image path if none exists, or rely on the fact that 
+        # we've already gathered ingredients.
+        # However, recipe_recommender.recommend() currently expects an image path.
+        # Let's adapt it to accept a list of ingredients directly or modify this call.
+        
+        # Actually, looking at RecipeRecommender.recommend in src/backend/recipe_recommender.py,
+        # it strictly requires an image path to start the pipeline.
+        # But we already have the ingredients here (all_ingredients).
+        # We need to bypass the image detection part of recommend() or update recommend() to accept ingredients.
+        
+        # OPTION: We can call pipeline.run() directly since we have access to recommender.pipeline
+        
+        # RecipeRecommender already initializes pipeline in __init__
+        # But we need to ensure it's available
+        if not hasattr(recommender, 'pipeline'):
+            from recipe_matching_system.recipe_matcher.pipeline import RecipePipeline
+            logger.info("Initializing RecipePipeline...")
+            recommender.pipeline = RecipePipeline(use_ontology=True)
+        
+        pipeline = recommender.pipeline
+        
+        # Run the Retrieve & Rank pipeline
+        # Pipeline stages:
+        # 1. Normalize user ingredients
+        # 2. Retrieve: Fast candidate recall (top 300)
+        # 3. Rank: Precise scoring and sorting (top K)
+        processed_ingredients, ranked_recipes = pipeline.run(all_ingredients, top_k=request_obj.top_k)
+        
+        # Format output
+        top = []
         dietary_keywords = {
             "vegan": ["meat", "beef", "chicken", "pork", "fish", "shrimp", "eggs", "milk", "cheese", "butter"],
             "vegetarian": ["meat", "beef", "chicken", "pork", "fish", "shrimp"],
             "dairy-free": ["milk", "cheese", "butter", "cream", "yogurt"],
             "gluten-free": ["flour", "bread", "pasta", "wheat"],
         }
-        
-        top_k = request_obj.top_k
         dietary_filter = request_obj.dietary_filter
         
-        for title, meta in recommender.recipe_dict.items():
-            # Check dietary filter
+        for r in ranked_recipes:
+            # Apply dietary filter
             if dietary_filter and dietary_filter != "None":
                 restricted = dietary_keywords.get(dietary_filter.lower(), [])
-                recipe_ingredients_lower = [ing.lower() for ing in meta["normalized"]]
-                if any(restricted_item in ing for ing in recipe_ingredients_lower for restricted_item in restricted):
+                # Check against normalized ingredients in the recipe
+                recipe_ings = [ing.lower() for ing in r.get("recipe_ingredients", [])]
+                if any(restricted_item in ing for ing in recipe_ings for restricted_item in restricted):
                     continue
             
-            score = recommender.matcher.match(all_ingredients, meta["normalized"])
-            scored_recipes.append({
-                "title": title,
-                "score": float(score),
-                "normalized_ingredients": meta["normalized"],
-                "cleaned_ingredients": meta["cleaned"],
-                "ingredients_raw": meta["ingredients_raw"],
-                "instructions": meta["instructions"],
-                "image_name": meta.get("image_name")
+            # Get recipe ingredients (use recipe_ingredients from match result)
+            recipe_ingredients = r.get("recipe_ingredients", [])
+            
+            top.append({
+                "title": r.get("title", ""),
+                "score": float(r.get("fuzzy_score", 0.0)) * 100,  # Convert 0-1 score to 0-100 percentage
+                "normalized_ingredients": recipe_ingredients,
+                "cleaned_ingredients": recipe_ingredients,  # Use same as normalized for now
+                "ingredients_raw": recipe_ingredients,  # Use same as normalized for now
+                "instructions": r.get("instructions", ""),
+                "image_name": r.get("image_name", "")
             })
         
-        # Sort and get top K
-        ranked = sorted(scored_recipes, key=lambda x: x["score"], reverse=True)
-        top = ranked[:top_k]
+        # Re-slice top_k after filtering
+        top = top[:request_obj.top_k]
         
         # Save to history
-        save_history(all_ingredients, top, top_k)
+        save_history(processed_ingredients, top, top_k)
         
         return {
-            "fridge_items": all_ingredients,
+            "fridge_items": processed_ingredients,
             "recommendations": top
         }
     except HTTPException:
