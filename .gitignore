@@ -52,6 +52,11 @@ data/processed/*
 data/recipes/*
 data/fridge_photos/*
 data/fridge_photos_sample/*
+# Allow required data files for deployment
+!data/normalized_recipes.json
+!data/ontology_recipes.json
+!data/ontology_recipes.pkl
+!data/canonical_vocab.json
 
 # Exclude sample images (too large for Git)
 # !data/fridge_photos_sample/
