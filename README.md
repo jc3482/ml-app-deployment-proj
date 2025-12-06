@@ -268,11 +268,8 @@ docker-compose up -d --build
 ### Testing
 
 ```bash
-# Run tests
-pytest
-
-# Test API endpoints
-python test_api.py
+# Run tests (if available)
+make test
 
 # Check code quality
 make format
