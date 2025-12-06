@@ -72,11 +72,12 @@ ENV PYTHONUNBUFFERED=1
 # Use 8001 as fallback for local development
 
 # Health check - check if FastAPI is running
-# Use PORT env var (set by HF Spaces, typically 7860) or default to 8001 for local
+# Use PORT env var (set by HF Spaces, typically 7860) or default to 7860
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
-    CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
+    CMD curl -f http://localhost:${PORT:-7860}/health || exit 1
 
 # Run the FastAPI application
-# Use PORT environment variable (HF Spaces sets this)
-CMD ["sh", "-c", "uvicorn app.api_extended:app --host 0.0.0.0 --port ${PORT:-8001}"]
+# Use PORT environment variable (HF Spaces sets this, typically 7860)
+# Default to 7860 for Hugging Face Spaces compatibility
+CMD ["sh", "-c", "uvicorn app.api_extended:app --host 0.0.0.0 --port ${PORT:-7860}"]
 
