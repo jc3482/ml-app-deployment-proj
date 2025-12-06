@@ -44,9 +44,11 @@ logs/
 # Data (large files - use Git LFS if needed)
 data/fridge_photos/
 data/recipes/recipe_dataset*.csv
-# Keep processed data files for deployment
-# data/normalized_recipes.*
-# data/ontology_recipes.*
+# Keep processed data files for deployment (explicitly allow)
+!data/ontology_recipes.pkl
+!data/ontology_recipes.json
+!data/normalized_recipes.json
+!data/canonical_vocab.json
 runs/
 results/
 
