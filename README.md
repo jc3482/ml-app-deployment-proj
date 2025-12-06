@@ -157,12 +157,12 @@ Access the application at `http://localhost:3000`
 
 ### Docker Deployment
 
-**Build and Run:**
+**Local Docker (Port 8001):**
 ```bash
 # Build Docker image
 docker build -t smartpantry:latest .
 
-# Run container
+# Run container (local development - uses port 8001)
 docker run -p 8001:8001 \
   -v $(PWD)/data:/app/data \
   -v $(PWD)/models:/app/models \
@@ -173,6 +173,8 @@ docker-compose up -d --build
 ```
 
 Access at `http://localhost:8001`
+
+**Note**: When deployed to Hugging Face Spaces, the container automatically uses the `PORT` environment variable (typically 7860), not 8001. The Dockerfile handles this automatically.
 
 ### Hugging Face Spaces Deployment
 
@@ -186,15 +188,18 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) or [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for det
 5. Access at `https://YOUR_USERNAME-smartpantry.hf.space` or `https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
 
 **Important Notes:**
-- The application automatically uses the `PORT` environment variable set by Hugging Face Spaces
+- **Port Configuration**: Hugging Face Spaces automatically sets the `PORT` environment variable (typically 7860, not 8001)
+- The application automatically uses the `PORT` environment variable - no manual configuration needed
 - Health check endpoint (`/health`) is optimized for fast response during model initialization
 - Frontend uses relative API paths (`/api/*`), so no configuration needed for different ports
 - If the Space shows "Starting" for a long time, check the Logs tab - the app may already be running
+- **Local vs Deployed**: Local development uses port 8001, but deployed Spaces use the PORT env var (usually 7860)
 
 ### API Access
 
 The application provides a REST API via FastAPI:
 
+**Local Development (Port 8001):**
 ```bash
 # Start API server
 uvicorn app.api_extended:app --host 0.0.0.0 --port 8001
@@ -203,6 +208,11 @@ uvicorn app.api_extended:app --host 0.0.0.0 --port 8001
 # Swagger UI: http://localhost:8001/docs
 # ReDoc: http://localhost:8001/redoc
 ```
+
+**Hugging Face Spaces:**
+- The API automatically uses the `PORT` environment variable (typically 7860)
+- Access API docs at: `https://YOUR_USERNAME-smartpantry.hf.space/docs`
+- Health check: `https://YOUR_USERNAME-smartpantry.hf.space/health`
 
 **Available Endpoints:**
 - `GET /` - Root endpoint
@@ -332,7 +342,7 @@ See `data/README.md` for download instructions.
 - Frontend and backend in single Docker container
 - Hugging Face Spaces deployment with optimized health checks
 - Health checks optimized for fast startup (non-blocking during model initialization)
-- Automatic port configuration using environment variables
+- Automatic port configuration: local development uses 8001, deployed Spaces use `PORT` env var (typically 7860)
 - Documentation (README, DEPLOYMENT.md, QUICK_DEPLOY.md) 
 
 ## Technical Highlights
@@ -362,8 +372,8 @@ See `data/README.md` for download instructions.
 ## Commands
 
 ```bash
-# Development
-make run              # Start FastAPI backend (port 8001)
+# Development (Local - Port 8001)
+make run              # Start FastAPI backend (port 8001 for local dev)
 make test-api         # Test API endpoints
 make test             # Run tests
 make format           # Format code
@@ -371,7 +381,7 @@ make lint             # Check code quality
 
 # Docker
 make docker-build     # Build image
-make docker-run       # Run container
+make docker-run       # Run container (local - port 8001)
 
 # Frontend (separate terminal)
 cd frontend
@@ -381,6 +391,8 @@ npm run build         # Build for production
 # Training
 jupyter notebook      # Open notebooks
 ```
+
+**Note**: All port 8001 references are for local development. Hugging Face Spaces deployment automatically uses the `PORT` environment variable (typically 7860).
 
 ## Repository Organization
 
@@ -399,6 +411,7 @@ Sample datasets are in Git for team testing and CI/CD.
   - If Space shows "Starting" for a long time, check the Logs tab - the app may already be accessible
   - Health check endpoint (`/health`) returns immediately, even during model initialization
   - Frontend automatically adapts to any port via relative API paths
+  - **Port Note**: Local development uses port 8001, but Hugging Face Spaces uses the `PORT` env var (typically 7860) - this is handled automatically
 - Open an issue for bugs or questions
 
 ## Course Context
