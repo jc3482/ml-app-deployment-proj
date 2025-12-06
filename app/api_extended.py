@@ -123,9 +123,16 @@ class RecommendRequest(BaseModel):
 
 # API Endpoints
 
-# Root endpoint (for API info)
+# Root endpoint - serve frontend if available, otherwise return API info
 @app.get("/")
 async def root():
+    # Check if frontend exists and serve it
+    frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
+    index_path = frontend_dist / "index.html"
+    if index_path.exists():
+        from fastapi.responses import FileResponse
+        return FileResponse(str(index_path))
+    # Fallback to API info if no frontend
     return {"status": "ok", "message": "SmartPantry API is running"}
 
 
