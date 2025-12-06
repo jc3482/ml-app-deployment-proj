@@ -51,12 +51,13 @@ data/
 data/processed/*
 data/recipes/*
 data/fridge_photos/*
+data/fridge_photos_sample/*
 
-# Keep sample datasets for testing (small enough for Git)
-!data/fridge_photos_sample/
-!data/fridge_photos_sample/**
-!data/recipes_sample/
-!data/recipes_sample/**
+# Exclude sample images (too large for Git)
+# !data/fridge_photos_sample/
+# !data/fridge_photos_sample/**
+# !data/recipes_sample/
+# !data/recipes_sample/**
 
 # Model files
 models/yolo/*.pt
