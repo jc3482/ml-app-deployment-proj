@@ -70,8 +70,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8001
 
 # Health check - check if FastAPI is running
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8001/health || exit 1
+# Use PORT env var or default to 8001
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
 
 # Run the FastAPI application
 # Use PORT environment variable (HF Spaces sets this)
