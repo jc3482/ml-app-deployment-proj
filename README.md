@@ -176,14 +176,20 @@ Access at `http://localhost:8001`
 
 ### Hugging Face Spaces Deployment
 
-See [DEPLOY_TO_HF.md](DEPLOY_TO_HF.md) for detailed instructions.
+See [DEPLOYMENT.md](DEPLOYMENT.md) or [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for detailed instructions.
 
 **Quick Steps:**
-1. Create a Space on Hugging Face (SDK: Docker)
+1. Create a Space on Hugging Face (SDK: Docker, Hardware: CPU Basic)
 2. Add remote: `git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
 3. Push: `git push hf main`
 4. Wait for build (5-15 minutes)
-5. Access at `https://YOUR_USERNAME-smartpantry.hf.space`
+5. Access at `https://YOUR_USERNAME-smartpantry.hf.space` or `https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
+
+**Important Notes:**
+- The application automatically uses the `PORT` environment variable set by Hugging Face Spaces
+- Health check endpoint (`/health`) is optimized for fast response during model initialization
+- Frontend uses relative API paths (`/api/*`), so no configuration needed for different ports
+- If the Space shows "Starting" for a long time, check the Logs tab - the app may already be running
 
 ### API Access
 
@@ -324,9 +330,10 @@ See `data/README.md` for download instructions.
 - Docker containerization with Dockerfile and docker-compose.yml
 - FastAPI REST API with comprehensive endpoints (`/api/*`)
 - Frontend and backend in single Docker container
-- Hugging Face Spaces deployment
-- Health checks and logging
-- Documentation (README, DEPLOY_TO_HF.md) 
+- Hugging Face Spaces deployment with optimized health checks
+- Health checks optimized for fast startup (non-blocking during model initialization)
+- Automatic port configuration using environment variables
+- Documentation (README, DEPLOYMENT.md, QUICK_DEPLOY.md) 
 
 ## Technical Highlights
 
@@ -339,12 +346,13 @@ See `data/README.md` for download instructions.
 - Recipe Recommender Pipeline: Unified ML pipeline integrating detection and retrieval 
 
 **Application Features:**
-- React Frontend: Modern, responsive single-page application
+- React Frontend: Modern, responsive single-page application with relative API paths
 - FastAPI REST API: Comprehensive REST endpoints with `/api` prefix
-- Docker Deployment: Containerized application (frontend + backend)
-- Hugging Face Spaces: Public deployment with automatic scaling
+- Docker Deployment: Containerized application (frontend + backend in one container)
+- Hugging Face Spaces: Public deployment with automatic scaling and optimized health checks
 - Persistent Storage: JSON-based storage for user history and pantry lists
 - Dietary Filtering: Support for multiple dietary restrictions
+- Smart Health Checks: Fast, non-blocking health endpoint for reliable deployment status
 
 **Data Structures & Algorithms:**
 - Hash-based recipe lookups (dictionary-based recipe storage)
@@ -385,8 +393,12 @@ Sample datasets are in Git for team testing and CI/CD.
 ## Questions or Issues
 
 - Check `data/README.md` for dataset setup
-- Check `DEPLOY_TO_HF.md` for Hugging Face deployment instructions
+- Check `DEPLOYMENT.md` or `QUICK_DEPLOY.md` for Hugging Face deployment instructions
 - Check `frontend/README.md` for frontend development
+- **Troubleshooting Hugging Face Spaces:**
+  - If Space shows "Starting" for a long time, check the Logs tab - the app may already be accessible
+  - Health check endpoint (`/health`) returns immediately, even during model initialization
+  - Frontend automatically adapts to any port via relative API paths
 - Open an issue for bugs or questions
 
 ## Course Context
