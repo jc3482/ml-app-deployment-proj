@@ -1,0 +1,46 @@
+.setting-group {
+  margin-bottom: 1.5em;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-group label {
+  display: block;
+  color: var(--tan-text);
+  margin-bottom: 0.5em;
+  font-weight: 400;
+}
+
+.slider {
+  width: 100%;
+  margin: 0.5em 0;
+  accent-color: var(--beige-border);
+}
+
+.slider-value {
+  display: inline-block;
+  margin-left: 1em;
+  color: var(--tan-text);
+  font-weight: 400;
+}
+
+.select {
+  width: 100%;
+  padding: 0.8em;
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  font-family: 'Georgia', serif;
+  font-size: 1em;
+  color: var(--text-dark);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--beige-hover);
+  box-shadow: 0 0 0 2px rgba(212, 196, 176, 0.2);
+}
+

@@ -1,0 +1,249 @@
+[project]
+name = "smartpantry"
+version = "0.1.0"
+description = "AI-powered fridge ingredient detection and recipe recommendation system"
+authors = [
+    {name = "Stacy Che"},
+    {name = "Kexin Lyu"},
+    {name = "Samantha Wang"},
+    {name = "Zexi Wu (Allen)"},
+    {name = "Tongrui Zhang (Neil)"},
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+keywords = ["machine-learning", "computer-vision", "nlp", "yolo", "recipe-recommendation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # Core ML/DL Frameworks
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "ultralytics>=8.0.0",
+    "opencv-python>=4.8.0",
+    "pillow>=10.0.0",
+    
+    # NLP and Embeddings
+    "sentence-transformers>=2.2.0",
+    "transformers>=4.30.0",
+    "tokenizers>=0.13.0",
+    
+    # Vector Search and Retrieval
+    "faiss-cpu>=1.7.4",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    
+    # Data Processing
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "fuzzywuzzy>=0.18.0",
+    "python-levenshtein>=0.21.0",
+    
+    # Clustering
+    "hdbscan>=0.8.33",
+    "umap-learn>=0.5.3",
+    
+    # API and Web Framework
+    "gradio>=4.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "flask>=2.3.0",
+    
+    # Configuration and Utilities
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.65.0",
+    "click>=8.1.0",
+    
+    # Evaluation and Metrics
+    "torchmetrics>=1.0.0",
+    
+    # Visualization
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.14.0",
+    
+    # AWS SDK
+    "boto3>=1.28.0",
+    "botocore>=1.31.0",
+    
+    # Logging and Monitoring
+    "loguru>=0.7.0",
+    
+    # Image Processing
+    "albumentations>=1.3.0",
+    "imageio>=2.31.0",
+    
+    # Miscellaneous
+    "requests>=2.31.0",
+    "aiohttp>=3.8.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Development and Testing
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.7.0",
+    "flake8>=6.0.0",
+    "mypy>=1.4.0",
+    "isort>=5.12.0",
+    "pre-commit>=3.3.0",
+    
+    # Jupyter and Notebooks
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+    "ipywidgets>=8.0.0",
+    "jupyterlab>=4.0.0",
+]
+
+experiments = [
+    # Experiment tracking
+    "wandb>=0.15.0",
+    "tensorboard>=2.13.0",
+]
+
+data = [
+    # Data Download and Management
+    "gdown>=4.7.0",
+    "kaggle>=1.5.0",
+    "huggingface-hub>=0.16.0",
+]
+
+gpu = [
+    # GPU-specific packages
+    "faiss-gpu>=1.7.4",
+]
+
+all = [
+    "smartpantry[dev,experiments,data]",
+]
+
+[project.urls]
+Homepage = "https://github.com/smartpantry/smartpantry"
+Documentation = "https://github.com/smartpantry/smartpantry/blob/main/README.md"
+Repository = "https://github.com/smartpantry/smartpantry"
+Issues = "https://github.com/smartpantry/smartpantry/issues"
+
+[project.scripts]
+smartpantry = "app.api_extended:main"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["src", "app"]
+
+[tool.setuptools.package-data]
+smartpantry = ["*.yaml", "*.yml"]
+
+# Black configuration
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | build
+  | dist
+)/
+'''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+# mypy configuration
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+# pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "gpu: marks tests that require GPU",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+]
+
+# Ruff configuration (optional - modern linter/formatter alternative)
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+

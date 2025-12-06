@@ -1,0 +1,130 @@
+.app {
+  min-height: 100vh;
+  background: var(--beige-bg);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2em;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  margin-bottom: 2em;
+}
+
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+/* Card styling */
+.card {
+  background: var(--white);
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  padding: 1.5em;
+  font-family: 'Georgia', serif;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--beige-hover);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.card h2,
+.card h3 {
+  color: var(--tan-text);
+  font-weight: 400;
+  margin: 0 0 1em 0;
+  letter-spacing: 0.02em;
+}
+
+/* Button styling */
+.btn {
+  background: var(--beige-border);
+  color: var(--tan-text);
+  border: 1px solid var(--beige-hover);
+  border-radius: 4px;
+  padding: 0.6em 1.2em;
+  font-family: 'Georgia', serif;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--beige-hover);
+  color: var(--text-light);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--tan-text);
+  color: var(--white);
+  border-color: var(--tan-text);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--tan-dark);
+}
+
+.btn-primary:disabled {
+  background: var(--beige-border);
+  color: var(--tan-dark);
+  border-color: var(--beige-border);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--tan-dark);
+  border-color: var(--beige-border);
+}
+
+.btn-secondary:hover {
+  background: var(--beige-light);
+}
+
+/* Input styling */
+.input {
+  width: 100%;
+  padding: 0.8em;
+  border: 1px solid var(--beige-border);
+  border-radius: 4px;
+  font-family: 'Georgia', serif;
+  font-size: 1em;
+  color: var(--text-dark);
+  background: var(--white);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--beige-hover);
+  box-shadow: 0 0 0 2px rgba(212, 196, 176, 0.2);
+}
+
+/* Loading spinner */
+.loading {
+  text-align: center;
+  padding: 2em;
+  color: var(--tan-dark);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+}
+

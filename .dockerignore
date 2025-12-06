@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/node_modules/
+# frontend/dist/ - Allow this, we'll build it in Docker
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+*.ipynb
+notebooks/
+
+# Logs
+logs/
+*.log
+
+# Data (large files - use Git LFS if needed)
+data/fridge_photos/
+data/recipes/recipe_dataset*.csv
+# Keep processed data files for deployment
+# data/normalized_recipes.*
+# data/ontology_recipes.*
+runs/
+results/
+
+# Models (if too large, use Git LFS)
+# models/yolo/*.pt
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Other
+.DS_Store
+# Allow data pkl files for deployment
+!data/ontology_recipes.pkl
+!data/normalized_recipes.pkl
+*.pt
+*.h5
+*.ckpt
