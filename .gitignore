@@ -79,7 +79,8 @@ models/checkpoints/*
 
 # Old model system (not used in deployment)
 ingredients-recognizing-system/
-src/vision/yolo_detector/best.pt
+# Allow best.pt for YOLO detector (required for deployment)
+# src/vision/yolo_detector/best.pt
 
 # Logs
 logs/
