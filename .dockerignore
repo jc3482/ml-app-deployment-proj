@@ -65,6 +65,8 @@ docker-compose*.yml
 # Allow data pkl files for deployment
 !data/ontology_recipes.pkl
 !data/normalized_recipes.pkl
+# Exclude model files, but allow best.pt for YOLO detector
 *.pt
+!src/vision/yolo_detector/best.pt
 *.h5
 *.ckpt
