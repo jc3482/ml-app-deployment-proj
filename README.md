@@ -178,22 +178,9 @@ Access at `http://localhost:8001`
 
 ### Hugging Face Spaces Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) or [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for detailed instructions.
+**Live Demo:** [https://huggingface.co/spaces/qqmian0820/smartpantryy](https://huggingface.co/spaces/qqmian0820/smartpantryy)
 
-**Quick Steps:**
-1. Create a Space on Hugging Face (SDK: Docker, Hardware: CPU Basic)
-2. Add remote: `git remote add hf https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
-3. Push: `git push hf main`
-4. Wait for build (5-15 minutes)
-5. Access at `https://YOUR_USERNAME-smartpantry.hf.space` or `https://huggingface.co/spaces/YOUR_USERNAME/smartpantry`
-
-**Important Notes:**
-- **Port Configuration**: Hugging Face Spaces automatically sets the `PORT` environment variable (typically 7860, not 8001)
-- The application automatically uses the `PORT` environment variable - no manual configuration needed
-- Health check endpoint (`/health`) is optimized for fast response during model initialization
-- Frontend uses relative API paths (`/api/*`), so no configuration needed for different ports
-- If the Space shows "Starting" for a long time, check the Logs tab - the app may already be running
-- **Local vs Deployed**: Local development uses port 8001, but deployed Spaces use the PORT env var (usually 7860)
+For deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ### API Access
 
@@ -210,9 +197,8 @@ uvicorn app.api_extended:app --host 0.0.0.0 --port 8001
 ```
 
 **Hugging Face Spaces:**
-- The API automatically uses the `PORT` environment variable (typically 7860)
-- Access API docs at: `https://YOUR_USERNAME-smartpantry.hf.space/docs`
-- Health check: `https://YOUR_USERNAME-smartpantry.hf.space/health`
+- Live API: [https://qqmian0820-smartpantryy.hf.space/docs](https://qqmian0820-smartpantryy.hf.space/docs)
+- Health check: [https://qqmian0820-smartpantryy.hf.space/health](https://qqmian0820-smartpantryy.hf.space/health)
 
 **Available Endpoints:**
 - `GET /` - Root endpoint
@@ -411,7 +397,6 @@ Sample datasets are in Git for team testing and CI/CD.
   - If Space shows "Starting" for a long time, check the Logs tab - the app may already be accessible
   - Health check endpoint (`/health`) returns immediately, even during model initialization
   - Frontend automatically adapts to any port via relative API paths
-  - **Port Note**: Local development uses port 8001, but Hugging Face Spaces uses the `PORT` env var (typically 7860) - this is handled automatically
 - Open an issue for bugs or questions
 
 ## Course Context
