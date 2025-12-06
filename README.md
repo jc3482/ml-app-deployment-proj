@@ -1,8 +1,8 @@
 ---
 title: SmartPantry
 emoji: 🥗
-colorFrom: beige
-colorTo: tan
+colorFrom: yellow
+colorTo: green
 sdk: docker
 sdk_version: latest
 app_file: Dockerfile
