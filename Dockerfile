@@ -63,14 +63,16 @@ RUN mkdir -p logs \
     models/checkpoints
 
 # Expose port (HF Spaces will map this automatically)
-EXPOSE 8001
+# Don't hardcode PORT - let Hugging Face Spaces set it (usually 7860)
+EXPOSE 7860
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8001
+# PORT will be set by Hugging Face Spaces (typically 7860)
+# Use 8001 as fallback for local development
 
 # Health check - check if FastAPI is running
-# Use PORT env var or default to 8001
+# Use PORT env var (set by HF Spaces, typically 7860) or default to 8001 for local
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
     CMD curl -f http://localhost:${PORT:-8001}/health || exit 1
 
