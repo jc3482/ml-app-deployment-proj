@@ -152,11 +152,11 @@ async def health_check():
             }
         else:
             # Models are loaded
-            return {
-                "status": "healthy",
+        return {
+            "status": "healthy",
                 "message": f"API is running. Loaded {len(_recommender.recipe_dict)} recipes.",
                 "ready": True
-            }
+        }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         # Still return 200 to avoid Hugging Face thinking the app is down
