@@ -1,15 +1,3 @@
----
-title: SmartPantry
-emoji: 🥗
-colorFrom: yellow
-colorTo: green
-sdk: docker
-sdk_version: latest
-app_file: Dockerfile
-pinned: false
-license: mit
----
-
 # SmartPantry: Recipes from Your Fridge Cam
 
 **Course Project**: Machine Learning Application Deployment
